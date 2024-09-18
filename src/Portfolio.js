@@ -1,7 +1,7 @@
 import React from 'react';
 import { Github, Linkedin, Mail } from 'lucide-react';
 import { personalInfo, experiences, education, socialLinks } from './data/portfolioData';
-import profileImage from './profilepicture.png';  // Add this line
+import profileImage from './assets/profilepicture.png';  // Add this line
 
 const ExperienceItem = ({ title, company, date, description, skills }) => (
   <div className="mb-6">
