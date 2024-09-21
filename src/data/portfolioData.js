@@ -8,9 +8,9 @@ export const experiences = [
 {
     title: "Machine Learning Engineer Intern",
     company: "Q-Free - Trondheim",
-    date: "Jun. 2024 - today",
-    description: "Continuing work on the ALPR project, focusing on automating the entire machine learning workflow. Developed and implemented a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraged tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
-    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD"],
+    date: "Sep. 2024 - today",
+    description: "Continuing work on the synthetic weather generation, focusing on automating the entire machine learning workflow. Developing and implementing a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraging tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
+    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD", "Cycle GAN"],
 
 },
 {
@@ -26,7 +26,7 @@ export const experiences = [
     company: "Q-Free - Trondheim",
     date: "Jun. 2024 - aug. 2024",
     description: "Developed a system to synthesize weather conditions on ALPR (Automatic License Plate Recognition) images. Designed custom neural networks and fine-tuned pretrained models. Set up a training pipeline and developed an inference pipeline in Google Kubernetes Engine. Worked extensively with Docker and Bash to create an automated inference platform in Google Cloud.",
-    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD"],
+    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD", "Cycle GAN"],
   
 },
 {
