@@ -9,7 +9,7 @@ export const experiences = [
     title: "Machine Learning Engineer Intern",
     company: "Q-Free - Trondheim",
     date: "Sep. 2024 - today",
-    description: "Continuing work on the synthetic weather generation, focusing on automating the entire machine learning workflow. Developing and implementing a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraging tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
+    description: "Continuing work on synthesizing weather conditions in ALPR (Automatic License Plate Recognition) images, focusing on automating the entire machine learning workflow. Developing a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraging tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
     skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD", "Cycle GAN"],
 
 },
