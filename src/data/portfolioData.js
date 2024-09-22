@@ -33,7 +33,7 @@ export const experiences = [
     title: "Perception Engineer",
     company: "Ascend Aerial Robotics Team - Trondheim",
     date: "Sep. 2023 - sep. 2024",
-    description: "Worked on computer vision and sensor fusion transforming the drone's sensor data into valuable insights about the drone's surroundings. Trained and fine tuned a detection model, and implemented image sliced training and inference for better accuracy without compromising performance. Development was done on the Nvidia Jetson Orin platform.",
+    description: "Worked on computer vision and sensor fusion transforming the drone's sensor data into valuable insights about the drone's surroundings. Trained and fine tuned a detection model on NTNU's HPC cluster, and implemented image sliced training and inference for better accuracy without compromising performance. Development was done on the Nvidia Jetson Orin platform.",
     skills: ["Machine Learning", "Git", "ROS2", "Python", "C++", "PyTorch", "CUDA", "Ultralytics", "OpenCV", "Linux", "NVIDIA Jetson"],
  
 },
