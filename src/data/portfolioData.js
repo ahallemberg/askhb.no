@@ -41,7 +41,7 @@ export const experiences = [
     title: "App & Web Developer",
     company: "Self Employed",
     date: "2019 - 2023",
-    description: "Developed various web applications in JavaScript and PHP, as well as mobile apps in React Native. The most successful app is the website trafikkskiltene.no, which I developed when I was about to get my driver's license at the age of 16, and thus had to learn the traffic signs. Since New Year (2024), the website has had over 200,000 page views. Through advertisements, I continue to earn money from the project, almost 4 years after I created the app.",
+    description: "Developed various web applications in JavaScript and PHP, as well as mobile apps in React Native. The most successful app is the website trafikkskiltene.no, which I developed when I was about to get my driver's license at the age of 16, and thus had to learn the traffic signs. Since its launch, the site has garnered over 460,000 page views. Through advertisements, I continue to earn money from the project, almost 4 years after I created the app.",
     skills: ["Javascript", "Typescript", "PHP", "HTML", "CSS", "React", "Apache HTTP Server", "Linux"],
 
 
