@@ -9,12 +9,12 @@ export const experiences = [
     title: "Summer Internship",
     company: "Computas - Oslo",
     date: "Jun. 2025 - jul. 2025",
-    description: "Summer intern working on a AI chatbot for TV-aksjonen",
+    description: "Summer intern working on an AI chatbot for TV-aksjonen",
     skills: [],
  
 },
 {
-    title: "Co-Founder and Software Engineer",
+    title: "Co-Founder & Software Engineer",
     company: "FEYN - Trondheim",
     date: "Feb. 2025 - today",
     description: "Developing automatic database migration tools. More to come!",
