@@ -1,17 +1,25 @@
 export const personalInfo = {
     name: "Ask Hallem-Berg",
     title: "Master's student in Computer Science | Deputy Chief Engineer at Ascend | Machine Learning Engineer Intern at Q-Free",
-    about: "With a strong passion for technology and programming since the age of 14, I have continuously sought opportunities to develop my skills through both academic and professional pursuits. Currently, I am a Master's student in Computer Science at NTNU and serve as the Deputy Chief Engineer at Ascend, where I lead technical teams to advance autonomous drone technologies. In addition to my role at Ascend, I work part-time at Q-Free, contributing to machine learning projects focused on optimizing computer vision systems. My work is often characterized by an analytical mindset, creativity, and strong communication skills in both Norwegian and English. I thrive in collaborative environments, driving innovative solutions that make a meaningful impact."
+    about: "With a strong passion for technology and programming since the age of 14, I have continuously sought opportunities to develop my skills through both academic and professional pursuits. Currently, I am a Master's student in Computer Science at NTNU and serve as the Deputy Chief Engineer at Ascend, where I lead technical teams to advance autonomous drone technologies. My work is often characterized by an analytical mindset, creativity, and strong communication skills in both Norwegian and English. I thrive in collaborative environments, driving innovative solutions that make a meaningful impact."
   };
 
 export const experiences = [
 {
-    title: "Machine Learning Engineer Intern",
-    company: "Q-Free - Trondheim",
-    date: "Sep. 2024 - today",
-    description: "Continuing work on synthesizing weather conditions in ALPR (Automatic License Plate Recognition) images, focusing on automating the entire machine learning workflow. Developing a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraging tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
-    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD", "Cycle GAN"],
-
+    title: "Summer Internship",
+    company: "Computas - Oslo",
+    date: "Jun. 2025 - jul. 2025",
+    description: "Summer intern working on a AI chatbot for TV-aksjonen",
+    skills: [],
+ 
+},
+{
+    title: "Co-Founder and Software Engineer",
+    company: "FEYN - Trondheim",
+    date: "Feb. 2025 - today",
+    description: "Developing automatic database migration tools. More to come!",
+    skills: [],
+ 
 },
 {
     title: "Deputy Chief Engineer",
@@ -20,6 +28,14 @@ export const experiences = [
     description: "Responsible for overseeing Ascend's four technical groups. Recruited 21 engineers from a pool of 200+ applicants from NTNU. Coordinate efforts of 29  engineers to ensure seamless integration of work on autonomous drones. Work closely with Chief Engineer to set strategic goals, manage project timelines, and maintain high standards of technical excellence.",
     skills: ["Team Leadership", "Project Management", "System Integration", "Recruitment"],
  
+},
+{
+    title: "Machine Learning Engineer Intern",
+    company: "Q-Free - Trondheim",
+    date: "Sep. 2024 - des. 2024",
+    description: "Continuing work on synthesizing weather conditions in ALPR (Automatic License Plate Recognition) images, focusing on automating the entire machine learning workflow. Developing a CI/CD pipeline to streamline the process from model training to deployment and inference, ensuring efficient updates and scalability of the model in production. Leveraging tools such as Kubernetes, Docker, and Google Cloud Platform to optimize performance and maintain a robust deployment environment.",
+    skills: ["Machine Learning", "Git", "Python", "PyTorch", "CUDA", "Linux", "Docker", "Kubernetes", "Google Cloud Platform", "CI/CD", "Cycle GAN"],
+
 },
 {
     title: "Machine Learning Engineer Summer Intern",
