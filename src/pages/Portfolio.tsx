@@ -19,8 +19,8 @@ const Portfolio: React.FC = () => {
           <h1 className="text-3xl font-bold mb-2">{personalInfo.name}</h1>
           <p className="text-xl text-gray-600 mb-4">{personalInfo.title}</p>
           <div className="flex justify-center">
-            {socialLinks.map((link: SocialLinkItemProps, index: number) => (
-              <SocialLink key={index} {...link} />
+            {socialLinks.map((link, index: number) => (
+              <SocialLink key={index} {...link as SocialLinkItemProps} />
             ))}
           </div>
         </header>

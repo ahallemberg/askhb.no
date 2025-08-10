@@ -25,7 +25,7 @@ export interface EducationItemProps {
 export interface SocialLinkItemProps {
   name: string;
   url: string;
-  icon: string;
+  icon: 'Github' | 'Linkedin' | 'Mail';
 }
 
 export interface FadeInProps {
