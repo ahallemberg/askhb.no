@@ -1,0 +1,6 @@
+export const R2_ENDPOINT = "https://r2.askhb.no"
+export const R2_EDUCATION_ENDPOINT = R2_ENDPOINT + "/education.json"
+export const R2_EXPERIENCES_ENDPOINT = R2_ENDPOINT + "/experiences.json"
+export const R2_PERSONAL_INFO_ENDPOINT = R2_ENDPOINT + "/personalinfo.json"
+export const R2_SOCIAL_LINKS_ENDPOINT = R2_ENDPOINT + "/sociallinks.json"
+export const R2_PROFILE_PICTURE = R2_ENDPOINT + "/profilepicture.png"
