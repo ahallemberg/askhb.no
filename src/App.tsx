@@ -4,7 +4,7 @@ import Portfolio from './pages/Portfolio'
 function App() {
 
   useEffect(() => {
-    document.body.classList.add('bg-gray-100');
+    document.body.classList.add('bg-gray-100', 'dark:bg-gray-900');
   }, [])
 
   return (

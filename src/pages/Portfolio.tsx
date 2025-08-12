@@ -7,6 +7,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import { type EducationItemProps, type ExperienceItemProps, type SocialLinkItemProps} from '../types/props';
 import { useAllPortfolioData } from '../hooks/useData';
 import { R2_PROFILE_PICTURE } from '../constants/app';
+import DarkModeToggle from '../components/DarkModeToggle';
 
 
 const Portfolio: React.FC = () => {
@@ -14,7 +15,7 @@ const Portfolio: React.FC = () => {
 
     if (isLoading) {
         return (
-        <div className="bg-gray-100 min-h-screen font-sans flex items-center justify-center">
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans flex items-center justify-center">
             <LoadingSpinner />
         </div>
         )
@@ -22,42 +23,53 @@ const Portfolio: React.FC = () => {
 
     if (isError) {
         return (
-        <div className="bg-gray-100 min-h-screen font-sans flex items-center justify-center">
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans flex items-center justify-center">
             <ErrorMessage message={error?.message || 'Failed to load portfolio data'} />
         </div>
         )
     }
 
     return (
-        <div className="bg-gray-100 min-h-screen font-sans">
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
+           
             <FadeIn>
-                <header className="py-8 text-center">
-                    <img
-                        src={R2_PROFILE_PICTURE}
-                        alt="Ask Hallem-Berg"
-                        className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg"
-                    />
-                    <h1 className="text-3xl font-bold mb-2">{personalInfo.data?.name}</h1>
-                    <p className="text-xl text-gray-600 mb-4">{personalInfo.data?.title}</p>
-                    <div className="flex justify-center">
-                        {socialLinks.data?.map((link, index: number) => (
-                            <SocialLink key={index} {...link as SocialLinkItemProps} />
-                        ))}
+                <header className="py-8 text-center relative">
+                    <div className="container mx-auto px-4 relative max-w-6xl">
+                        {/* Dark mode toggle positioned in top-right of container */}
+                        <div className="absolute top-0 right-4">
+                            <DarkModeToggle />
+                        </div>
+                        
+                        <div className="text-center">
+                            <img
+                                src={R2_PROFILE_PICTURE}
+                                alt="Ask Hallem-Berg"
+                                className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg"
+                            />
+                            
+                            <h1 className="text-3xl font-bold mb-2 dark:text-white">{personalInfo.data?.name}</h1>
+                            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">{personalInfo.data?.title}</p>
+                            <div className="flex justify-center">
+                                {socialLinks.data?.map((link, index: number) => (
+                                    <SocialLink key={index} {...link as SocialLinkItemProps} />
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </header>
             </FadeIn>
 
-            <main className="container mx-auto px-4 py-8">
+            <main className="container mx-auto px-4 py-8 max-w-6xl">
                 <FadeIn delay={300}>
                     <section className="mb-8">
-                        <h2 className="text-2xl font-bold mb-4">About Me</h2>
-                        <p className="text-gray-700">{personalInfo.data?.about}</p>
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">About Me</h2>
+                        <p className="text-gray-700 dark:text-gray-300">{personalInfo.data?.about}</p>
                     </section>
                 </FadeIn>
 
                 <FadeIn delay={600}>
                     <section className="mb-8">
-                        <h2 className="text-2xl font-bold mb-4">Experience</h2>
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">Experience</h2>
                         {experiences.data?.map((exp: ExperienceItemProps, index: number) => (
                             <ExperienceItem key={index} {...exp} />
                         ))}
@@ -66,7 +78,7 @@ const Portfolio: React.FC = () => {
 
                 <FadeIn delay={900}>
                     <section className="mb-8">
-                        <h2 className="text-2xl font-bold mb-4">Education</h2>
+                        <h2 className="text-2xl font-bold mb-4 dark:text-white">Education</h2>
                         {education.data?.map((edu: EducationItemProps, index: number) => (
                             <EducationItem key={index} {...edu} />
                         ))}
