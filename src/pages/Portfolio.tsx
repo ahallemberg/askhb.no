@@ -29,10 +29,15 @@ const Portfolio: React.FC = () => {
         )
     }
 
+    const headerDelay = 100;
+    const aboutDelay = 200;
+    const experienceDelay = 300;
+    const educationDelay = 400 + (experiences.data?.length || 0) * 100;
+
     return (
         <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
            
-            <FadeIn>
+            <FadeIn delay={headerDelay}>
                 <header className="py-8 text-center relative">
                     <div className="container mx-auto px-4 relative max-w-6xl">
                         {/* Dark mode toggle positioned in top-right of container */}
@@ -60,27 +65,31 @@ const Portfolio: React.FC = () => {
             </FadeIn>
 
             <main className="container mx-auto px-4 py-8 max-w-6xl">
-                <FadeIn delay={300}>
+                <FadeIn delay={aboutDelay}>
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 dark:text-white">About Me</h2>
                         <p className="text-gray-700 dark:text-gray-300">{personalInfo.data?.about}</p>
                     </section>
                 </FadeIn>
 
-                <FadeIn delay={600}>
+                <FadeIn delay={experienceDelay}>
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 dark:text-white">Experience</h2>
                         {experiences.data?.map((exp: ExperienceItemProps, index: number) => (
+                            <FadeIn delay={experienceDelay + index * 100}>
                             <ExperienceItem key={index} {...exp} />
+                            </FadeIn>
                         ))}
                     </section>
-                </FadeIn>
+               </FadeIn>
 
-                <FadeIn delay={900}>
+                <FadeIn delay={educationDelay}>
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 dark:text-white">Education</h2>
                         {education.data?.map((edu: EducationItemProps, index: number) => (
+                        <FadeIn delay={educationDelay + index * 100}>
                             <EducationItem key={index} {...edu} />
+                        </FadeIn>
                         ))}
                     </section>
                 </FadeIn>
