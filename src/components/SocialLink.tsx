@@ -15,7 +15,7 @@ const SocialLink: React.FC<SocialLinkItemProps> = ({ name, url, icon }) => {
       href={url} 
       target="_blank" 
       rel="noopener noreferrer"
-      className="text-gray-600 hover:text-blue-600 mx-2 transition-transform duration-300 hover:scale-110" 
+      className="text-gray-600 hover:text-blue-600 mx-2 transition-transform duration-300 hover:scale-110 dark:text-gray-300" 
       aria-label={name}
     >
       <Icon size={24} />
