@@ -49,11 +49,11 @@ const Portfolio: React.FC = () => {
                             <img
                                 src={R2_PROFILE_PICTURE}
                                 alt="Ask Hallem-Berg"
-                                className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg"
+                                className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full shadow-lg"
                             />
                             
-                            <h1 className="text-3xl font-bold mb-2 dark:text-white">{personalInfo.data?.name}</h1>
-                            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">{personalInfo.data?.title}</p>
+                            <h1 className="md:text-3xl text-2xl font-bold mb-2 dark:text-white">{personalInfo.data?.name}</h1>
+                            <p className="md:text-xl text-lg text-gray-600 dark:text-gray-300 mb-4">{personalInfo.data?.title}</p>
                             <div className="flex justify-center">
                                 {socialLinks.data?.map((link, index: number) => (
                                     <SocialLink key={index} {...link as SocialLinkItemProps} />
