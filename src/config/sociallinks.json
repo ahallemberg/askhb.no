@@ -1,0 +1,22 @@
+[
+  {
+    "name": "GitHub",
+    "url": "https://github.com/ahallemberg",
+    "icon": "Github"
+  },
+  {
+    "name": "LinkedIn",
+    "url": "https://www.linkedin.com/in/ask-hallem-berg-736a80289/",
+    "icon": "Linkedin"
+  },
+  {
+    "name": "Email",
+    "url": "mailto:ahallemberg@gmail.com",
+    "icon": "Mail"
+  },
+  {
+    "name": "Phone",
+    "url": "tel:4799228376",
+    "icon": "Phone"
+  }
+]
