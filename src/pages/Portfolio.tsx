@@ -8,10 +8,11 @@ import { type EducationItemProps, type ExperienceItemProps, type SocialLinkItemP
 import { useAllPortfolioData } from '../hooks/useData';
 import { R2_PROFILE_PICTURE } from '../constants/app';
 import DarkModeToggle from '../components/DarkModeToggle';
+import socialLinks from '../config/sociallinks.json';
 
 
 const Portfolio: React.FC = () => {
-    const { personalInfo, experiences, education, socialLinks, isLoading, isError, error } = useAllPortfolioData();
+    const { personalInfo, experiences, education, isLoading, isError, error } = useAllPortfolioData();
 
     if (isLoading) {
         return (
@@ -55,7 +56,7 @@ const Portfolio: React.FC = () => {
                             <h1 className="md:text-3xl text-2xl font-bold mb-2 dark:text-white">{personalInfo.data?.name}</h1>
                             <p className="md:text-xl text-lg text-gray-600 dark:text-gray-300 mb-4">{personalInfo.data?.title}</p>
                             <div className="flex justify-center">
-                                {socialLinks.data?.map((link, index: number) => (
+                                {socialLinks.map((link, index: number) => (
                                     <SocialLink key={index} {...link as SocialLinkItemProps} />
                                 ))}
                             </div>

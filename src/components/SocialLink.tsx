@@ -1,11 +1,12 @@
 import { type SocialLinkItemProps } from "../types/props";
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone } from 'lucide-react';
 
 const SocialLink: React.FC<SocialLinkItemProps> = ({ name, url, icon }) => {
   const iconComponents = {
     Github,
     Linkedin,
-    Mail
+    Mail,
+    Phone
   } as const;
   
   const Icon = iconComponents[icon];
