@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import Portfolio from './pages/Portfolio'
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 function App() {
 
@@ -8,7 +9,10 @@ function App() {
   }, [])
 
   return (
-    <Portfolio/>
+    <Routes>
+      <Route path="/" element={<Portfolio/>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
