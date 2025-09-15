@@ -50,7 +50,7 @@ const Portfolio: React.FC = () => {
                             <img
                                 src={R2_PROFILE_PICTURE}
                                 alt="Ask Hallem-Berg"
-                                className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full shadow-lg"
+                                className="w-26 h-26 md:w-28 md:h-28 mx-auto mb-4"
                             />
                             
                             <h1 className="md:text-3xl text-2xl font-bold mb-2 dark:text-white">{personalInfo.data?.name}</h1>
