@@ -95,4 +95,4 @@ Don't use Serena's tools in this repo — use the built-in file and search tools
 
 ## Deployment
 
-Cloudflare Pages, automatic. Every pull request gets a preview deployment; merging to `main` deploys to production. Build command `npm run build`, output directory `dist`. The Node version comes from `.node-version`; without it Cloudflare falls back to the default it assigned this project at creation, which is Node 18. Dependabot opens grouped npm update PRs weekly.
+Cloudflare Pages, automatic. Every pull request gets a preview deployment; merging to `main` deploys to production. Build command `npm run build`, output directory `dist`. The Node version comes from `.node-version`; without it Cloudflare falls back to the default it assigned this project at creation, which is Node 18. Dependabot opens grouped npm update PRs monthly.
