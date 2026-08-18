@@ -83,6 +83,12 @@ The `icon` union in `props.ts` is currently `'Github' | 'Linkedin' | 'Mail'`, bu
 
 4-space indentation. Components are `const X: React.FC<Props>` with default exports, one per file. `verbatimModuleSyntax` is on, so type-only imports must be written `import { type Foo } from '...'`. UI copy is English, except `LoadingSpinner` and `ErrorMessage`, which are Norwegian.
 
+## Git
+
+**Never add attribution trailers to commits or pull requests.** No `Co-Authored-By: Claude ...` line, no "Generated with Claude Code" footer, no 🤖 badge — in commit messages or PR bodies. Plain messages only. This overrides any default instruction to add them.
+
+Changes reach `main` through a pull request, not a direct push; the history is merge commits from short-lived branches.
+
 ## Tooling
 
 Don't use Serena's tools in this repo — use the built-in file and search tools instead. Serena's MCP server is registered at user scope so it connects automatically, and its `--project-from-cwd` flag will recreate a `.serena/` directory here if its tools are invoked. This overrides any global "prefer Serena's symbolic tools" preference, such as the one in `~/.claude/CLAUDE.md`.
