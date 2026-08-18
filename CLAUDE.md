@@ -71,7 +71,7 @@ Tailwind 4 is wired through the Vite plugin (`@tailwindcss/vite`) and the CSS im
 
 ### Routing
 
-A single route (`/` → `Portfolio`); every other path redirects to `/`. React Router is present mostly to support that redirect. Keep it that way — new content pages belong in the Quartz site, not in `App.tsx`.
+Two routes: `/` → `Portfolio`, and `*` → `NotFound`. Keep it that way — new content pages belong in the Quartz site, not in `App.tsx`. Note that `NotFound` is a client-side 404 only; Cloudflare still serves the SPA shell with a 200, so unknown paths do not return a real 404 status.
 
 ## Gotchas
 
@@ -81,7 +81,7 @@ The `icon` union in `props.ts` is currently `'Github' | 'Linkedin' | 'Mail'`, bu
 
 ## Conventions
 
-4-space indentation. Components are `const X: React.FC<Props>` with default exports, one per file. `verbatimModuleSyntax` is on, so type-only imports must be written `import { type Foo } from '...'`. UI copy is English, except `LoadingSpinner` and `ErrorMessage`, which are Norwegian.
+4-space indentation. Components are `const X: React.FC<Props>` with default exports, one per file. `verbatimModuleSyntax` is on, so type-only imports must be written `import { type Foo } from '...'`. UI copy is English throughout.
 
 ## Git
 

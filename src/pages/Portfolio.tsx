@@ -31,9 +31,9 @@ const Portfolio: React.FC = () => {
     }
 
     const headerDelay = 100;
-    const aboutDelay = 200;
-    const experienceDelay = 300;
-    const educationDelay = 400 + (experiences.data?.length || 0) * 100;
+    const aboutDelay = 150;
+    const sectionDelay = 100;
+    const itemStagger = 60;
 
     return (
         <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
@@ -73,24 +73,24 @@ const Portfolio: React.FC = () => {
                     </section>
                 </FadeIn>
 
-                <FadeIn delay={experienceDelay}>
+                <FadeIn delay={sectionDelay}>
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 dark:text-white">Experience</h2>
                         {experiences.data?.map((exp: ExperienceItemProps, index: number) => (
-                            <FadeIn delay={experienceDelay + index * 100}>
-                            <ExperienceItem key={index} {...exp} />
+                            <FadeIn key={index} delay={index * itemStagger}>
+                                <ExperienceItem {...exp} />
                             </FadeIn>
                         ))}
                     </section>
                </FadeIn>
 
-                <FadeIn delay={educationDelay}>
+                <FadeIn delay={sectionDelay}>
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold mb-4 dark:text-white">Education</h2>
                         {education.data?.map((edu: EducationItemProps, index: number) => (
-                        <FadeIn delay={educationDelay + index * 100}>
-                            <EducationItem key={index} {...edu} />
-                        </FadeIn>
+                            <FadeIn key={index} delay={index * itemStagger}>
+                                <EducationItem {...edu} />
+                            </FadeIn>
                         ))}
                     </section>
                 </FadeIn>
