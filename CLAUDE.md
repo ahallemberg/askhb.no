@@ -1,0 +1,92 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. `AGENTS.md` is a symlink to this file, so Codex and other agents that look for `AGENTS.md` read the same content — edit this file, never the symlink.
+
+## Commands
+
+```bash
+npm run dev      # Vite dev server on http://localhost:5173
+npm run build    # tsc -b && vite build  → dist/
+npm run lint     # eslint .
+npm run preview  # serve the production build locally
+```
+
+Node ≥20 (per README). There is **no test framework configured** — no test script, no vitest/jest. Don't invent test commands; verify changes with `npm run build` and `npm run dev`.
+
+`npm run build` type-checks before bundling, under `strict` plus `noUnusedLocals` / `noUnusedParameters`. An unused variable or import fails the build, not just the lint.
+
+## Architecture
+
+### Content lives outside this repo
+
+The single most important thing to know: **editing this repo does not change the site's content.** Personal info, experience entries, education entries, and the profile picture are all fetched at runtime from a Cloudflare R2 bucket at `https://r2.askhb.no` (`src/constants/app.ts`):
+
+| Data | Endpoint |
+|---|---|
+| Name, title, about | `/personalinfo.json` |
+| Work experience | `/experiences.json` |
+| Education | `/education.json` |
+| Profile image | `/profilepicture.png` |
+
+To change portfolio content, edit the JSON objects in the R2 bucket — not the source. The only content committed here is `src/config/sociallinks.json`.
+
+### Write-ups are a separate Quartz site — do not build them here
+
+Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `obsidian-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
+
+The published slug is the filename verbatim, capitals included: `Computas.md` → `pages.askhb.no/Computas`, while `pages.askhb.no/computas` is a 404.
+
+To add one:
+
+1. Create `<Title>.md` in the content repo. No frontmatter and no `# H1` — Quartz uses the filename as the page title. `##` for sections, inline markdown links. Follow `Computas.md` as the model. Quartz auto-generates the meta description from the first ~150 characters of body text, so whatever the first line is ends up in social previews.
+2. Verify with `npx quartz build` from `~/repos/personal/pages.askhb.no` after copying the file into `content/` (that copy is a scratch build artifact — delete it afterwards; the source of truth is the content repo).
+3. Point the matching experience entry's `readMoreUrl` in R2 at `https://pages.askhb.no/<Title>`, via admin.askhb.no.
+
+Pushing to `main` in the content repo fires `.github/workflows/notify-parent.yml`, which dispatches to `pages.askhb.no` and triggers a rebuild.
+
+**A request to "add a page at askhb.no/X" means a Quartz note at `pages.askhb.no/X`** — not a new `src/pages/X.tsx` plus a `<Route>` in `App.tsx`. Two things make the mistake easy to miss: an R2 `readMoreUrl` may already say `https://askhb.no/X` (it is still wrong and needs to be `pages.askhb.no/X`), and Cloudflare Pages serves the SPA for any unknown path, so `askhb.no/X` silently redirects to `/` rather than 404ing.
+
+### Data flow
+
+`src/hooks/useData.ts` exposes three React Query hooks (`usePersonalInfo`, `useExperiences`, `useEducation`) plus `useAllPortfolioData()`, which fans out all three and collapses them into a single `isLoading` / `isError` pair. `src/pages/Portfolio.tsx` gates the whole page on that pair, so this is **all-or-nothing**: if any one of the three endpoints fails, the entire page renders `ErrorMessage` instead of partial content. Query defaults (5 min `staleTime`, 30 min `gcTime`, 3 retries, no refetch on focus) are set once on the `QueryClient` in `src/main.tsx`.
+
+`fetchJsonData` casts the response with no runtime validation, so a shape mismatch between R2 and the TypeScript types surfaces as a render-time error, not a fetch error.
+
+### Types are the contract with R2
+
+The interfaces in `src/types/props.ts` serve double duty: they type component props *and* describe the expected shape of the remote JSON. Changing `ExperienceItemProps` or `EducationItemProps` means the R2 JSON must change to match, and vice versa.
+
+### Dark mode
+
+Hand-rolled, not Tailwind's built-in `dark:` strategy. `src/index.css` declares the variant CSS-first (Tailwind 4 style):
+
+```css
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+`DarkModeToggle` toggles the `.dark` class on `document.documentElement` and persists the choice to `localStorage['theme']`, falling back to `prefers-color-scheme`. Separately, `App.tsx` adds background classes to `<body>` in an effect. Both matter for full-page theming.
+
+Tailwind 4 is wired through the Vite plugin (`@tailwindcss/vite`) and the CSS import. `tailwind.config.js` is a leftover v3-style stub and is not the place to configure anything.
+
+### Routing
+
+A single route (`/` → `Portfolio`); every other path redirects to `/`. React Router is present mostly to support that redirect. Keep it that way — new content pages belong in the Quartz site, not in `App.tsx`.
+
+## Gotchas
+
+**Adding a social link icon requires three coordinated edits:** import the lucide icon and add it to the `iconComponents` map in `src/components/SocialLink.tsx`, add the name to the `icon` union in `src/types/props.ts`, then add the entry to `src/config/sociallinks.json`.
+
+The `icon` union in `props.ts` is currently `'Github' | 'Linkedin' | 'Mail'`, but `sociallinks.json` already ships a `"Phone"` entry. This only compiles because `Portfolio.tsx` casts with `{...link as SocialLinkItemProps}`. If you touch this area, adding `'Phone'` to the union is the correct fix.
+
+## Conventions
+
+4-space indentation. Components are `const X: React.FC<Props>` with default exports, one per file. `verbatimModuleSyntax` is on, so type-only imports must be written `import { type Foo } from '...'`. UI copy is English, except `LoadingSpinner` and `ErrorMessage`, which are Norwegian.
+
+## Tooling
+
+Don't use Serena's tools in this repo — use the built-in file and search tools instead. Serena's MCP server is registered at user scope so it connects automatically, and its `--project-from-cwd` flag will recreate a `.serena/` directory here if its tools are invoked. This overrides any global "prefer Serena's symbolic tools" preference, such as the one in `~/.claude/CLAUDE.md`.
+
+## Deployment
+
+Cloudflare Pages, automatic. Every pull request gets a preview deployment; merging to `main` deploys to production. Build command `npm run build`, output directory `dist`. Dependabot opens grouped npm update PRs weekly.
