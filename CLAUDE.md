@@ -11,7 +11,7 @@ npm run lint     # eslint .
 npm run preview  # serve the production build locally
 ```
 
-Node ≥20 (per README). There is **no test framework configured** — no test script, no vitest/jest. Don't invent test commands; verify changes with `npm run build` and `npm run dev`.
+Node ≥22 — `.node-version` pins 22.16.0 because Vite 8 requires Node `^20.19.0 || >=22.12.0`, and Cloudflare Pages otherwise builds this project on its Node 18 default and fails. There is **no test framework configured** — no test script, no vitest/jest. Don't invent test commands; verify changes with `npm run build` and `npm run dev`.
 
 `npm run build` type-checks before bundling, under `strict` plus `noUnusedLocals` / `noUnusedParameters`. An unused variable or import fails the build, not just the lint.
 
@@ -95,4 +95,4 @@ Don't use Serena's tools in this repo — use the built-in file and search tools
 
 ## Deployment
 
-Cloudflare Pages, automatic. Every pull request gets a preview deployment; merging to `main` deploys to production. Build command `npm run build`, output directory `dist`. Dependabot opens grouped npm update PRs weekly.
+Cloudflare Pages, automatic. Every pull request gets a preview deployment; merging to `main` deploys to production. Build command `npm run build`, output directory `dist`. The Node version comes from `.node-version`; without it Cloudflare falls back to the default it assigned this project at creation, which is Node 18. Dependabot opens grouped npm update PRs weekly.
