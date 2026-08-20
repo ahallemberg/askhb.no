@@ -8,6 +8,7 @@ import { type EducationItemProps, type ExperienceItemProps, type SocialLinkItemP
 import { useAllPortfolioData } from '../hooks/useData';
 import { R2_PROFILE_PICTURE } from '../constants/app';
 import DarkModeToggle from '../components/DarkModeToggle';
+import { Download } from 'lucide-react';
 import socialLinks from '../config/sociallinks.json';
 
 
@@ -60,6 +61,18 @@ const Portfolio: React.FC = () => {
                                     <SocialLink key={index} {...link as SocialLinkItemProps} />
                                 ))}
                             </div>
+
+                            {personalInfo.data?.cvUrl && (
+                                <a
+                                    href={personalInfo.data.cvUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-600 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:border-blue-400 dark:hover:text-blue-400"
+                                >
+                                    <Download size={18} />
+                                    <span className="text-sm font-medium">Download CV</span>
+                                </a>
+                            )}
                         </div>
                     </div>
                 </header>
