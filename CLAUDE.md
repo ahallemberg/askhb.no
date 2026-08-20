@@ -27,6 +27,7 @@ The single most important thing to know: **editing this repo does not change the
 | Work experience | `/experiences.json` |
 | Education | `/education.json` |
 | Profile image | `/profilepicture.png` |
+| CV (optional) | `/cv.pdf` |
 
 To change portfolio content, edit the JSON objects in the R2 bucket — not the source. The only content committed here is `src/config/sociallinks.json`.
 
@@ -55,6 +56,8 @@ Pushing to `main` in the content repo fires `.github/workflows/notify-parent.yml
 ### Types are the contract with R2
 
 The interfaces in `src/types/props.ts` serve double duty: they type component props *and* describe the expected shape of the remote JSON. Changing `ExperienceItemProps` or `EducationItemProps` means the R2 JSON must change to match, and vice versa.
+
+`PersonalInfo.cvUrl` is optional and drives the header's Download CV button: the button renders only when the field is set. admin.askhb.no sets it after uploading a PDF. It is a stored field rather than a fixed `/cv.pdf` constant because the R2 bucket's CORS policy rejects HEAD requests from the site's origin, so the page cannot check whether a CV exists.
 
 ### Dark mode
 

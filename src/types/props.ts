@@ -4,6 +4,7 @@ export interface PersonalInfo {
     name: string;
     title: string;
     about: string;
+    cvUrl?: string;
 }
 
 export interface ExperienceItemProps {
