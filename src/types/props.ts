@@ -7,13 +7,21 @@ export interface PersonalInfo {
     cvUrl?: string;
 }
 
+export interface PortfolioLink {
+    label: string;
+    url: string;
+}
+
 export interface ExperienceItemProps {
     title: string;
     company: string;
     date: string;
     description: string;
     skills: string[];
+    // Superseded by links, and kept because entries written before multi-link
+    // support have only this. admin.askhb.no derives it from the first link.
     readMoreUrl?: string;
+    links?: PortfolioLink[];
 }
 
 export interface EducationItemProps {
