@@ -6,10 +6,28 @@ import QFreeMark from './QFreeMark';
  *
  * Two mechanisms, because the marks are not the same kind of file. Netlight,
  * Ascend and Computas are alpha-transparent rasters whose counters are holes in
- * the alpha channel, so greyscale plus opacity flattens them to a single ink
- * weight correctly. Q-Free is two-tone -- opaque white counters painted over a
- * red body -- so the same filter erases its counters; it ships as a component
- * that recolours from theme tokens instead. See QFreeMark.
+ * the alpha channel, so a greyscale filter is safe on them. Q-Free is two-tone
+ * -- opaque white counters painted over a red body -- so the same filter erases
+ * its counters; it ships as a component that recolours from theme tokens
+ * instead. See QFreeMark.
+ *
+ * The raster filter is measured, not guessed. Greyscale does not flatten a mark
+ * to one ink weight: over their opaque pixels these three carry two to four
+ * distinct tonal bands each -- Computas' navy ring against its cyan disc,
+ * Netlight's overlapping planes -- and at the old weight the lightest band
+ * washed out (1.39:1 against paper for Ascend). Flattening to a silhouette
+ * would fix the weight but cost the structure, turning Computas into a
+ * featureless black circle. So the bands are kept and the whole range is
+ * shifted: brightness() sets where the faintest band lands, opacity() sets the
+ * overall level. Both themes run ~2.4:1 at the faintest band to ~7:1 at the
+ * strongest -- subordinate to --color-ink (16.6:1 light, 15.5:1 dark), present
+ * but clearly not competing with the company name beside them.
+ *
+ * Dark mode inverts, which reverses that arithmetic, so brightness() is placed
+ * *before* invert(): it then reads as 255 - b*g, raising the floor the faintest
+ * band sits on. Placed after invert() it is a plain multiplier on the whole
+ * range, and lifting that band would need b > 1.4, which clips Computas' ring
+ * to pure white -- brighter than the body text next to it.
  */
 
 type MarkComponent = React.FC<{ className?: string; label?: string }>;
@@ -72,7 +90,7 @@ const LogoMark: React.FC<LogoMarkProps> = ({ url, scale = 1, alt = '' }) => {
                         <img
                             src={url}
                             alt={alt}
-                            className="max-h-full max-w-full object-contain grayscale contrast-90 opacity-60 dark:invert dark:opacity-70"
+                            className="max-h-full max-w-full object-contain [filter:grayscale(1)_brightness(0.7)_opacity(0.75)] dark:[filter:grayscale(1)_brightness(0.75)_invert(1)_opacity(0.7)]"
                         />
                     )}
             </span>
