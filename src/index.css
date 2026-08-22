@@ -1,41 +1,44 @@
 @import "tailwindcss";
+@import "../theme/tokens.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Palette lives under Tailwind's --color-* namespace so the tokens generate real
- * utilities (bg-paper, text-ink, border-rule).
+ * The palette itself now lives in the theme submodule, shared with
+ * pages.askhb.no. What follows is only the adapter: it lifts each shared token
+ * into Tailwind's --color-* namespace so the tokens generate real utilities.
  *
  * Two keywords are load-bearing:
- *   - NOT `@theme inline` -- inline bakes the literal hex into every utility, which
- *     would leave the .dark block below with nothing to override.
- *   - `static` -- without it Tailwind emits only the theme variables it sees used,
- *     so an unreferenced light value would be dropped from :root while the
- *     hand-written .dark block below kept its counterpart, giving a token that
- *     resolves in dark mode and is undefined in light mode.
+ *   - NOT `@theme inline` -- inline bakes the value into every utility at build
+ *     time, which would freeze the light value in place and leave the dark
+ *     block in tokens.css with nothing left to override.
+ *   - `static` -- without it Tailwind emits only the theme variables it sees
+ *     used, so an unreferenced token would be dropped here while its
+ *     counterpart in the shared file survived, giving a name that resolves in
+ *     one mode and is undefined in the other.
+ *
+ * The indirection is what carries dark mode: a utility resolves to
+ * var(--color-paper), which resolves to var(--paper), which the dark block in
+ * tokens.css redefines. Naming these after the shared tokens directly would
+ * collide instead -- two declarations of one name on :root, settled by whichever
+ * the bundler happened to emit last.
  */
 @theme static {
+    /*
+     * Full stacks here, against bare family names in the shared file: fontsource
+     * self-hosts the variable cut under a suffixed family name, so what is asked
+     * for here cannot be the name Quartz asks Google Fonts for. The shared file
+     * carries the typeface; each site composes its own stack around it.
+     */
     --font-serif: "Newsreader Variable", Georgia, serif;
     --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-    --color-paper: #fcfbf8;
-    --color-ink: #1c1b19;
-    --color-ink-muted: #4a463f;
-    /* Darkened from #918a7d (3.31:1) to clear WCAG AA 4.5:1 on --color-paper. */
-    --color-ink-faint: #787266;
-    --color-accent: #8a2f2f;
-    --color-rule: #e2dccf;
-    --color-rule-faint: #eeeae0;
-}
-
-.dark {
-    --color-paper: #16150f;
-    --color-ink: #f0ece0;
-    --color-ink-muted: #b8b2a1;
-    --color-ink-faint: #8a8272;
-    /* Warmed toward terracotta: #8a2f2f on near-black goes muddy. */
-    --color-accent: #d98a72;
-    --color-rule: #2e2c22;
-    --color-rule-faint: #252319;
+    --color-paper: var(--paper);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-ink-faint: var(--ink-faint);
+    --color-accent: var(--accent);
+    --color-rule: var(--rule);
+    --color-rule-faint: var(--rule-faint);
 }
 
 body {
