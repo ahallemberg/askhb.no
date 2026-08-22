@@ -29,11 +29,13 @@ const NotFound: React.FC = () => {
                     {/*
                      * Underlined rather than accent-coloured alone: accent against
                      * the copy beside it is nowhere near the 3:1 WCAG 1.4.1 wants
-                     * of a colour-only link cue. Same treatment as RoleBlock's.
+                     * of a colour-only link cue. Same treatment as RoleBlock's,
+                     * focus ring included: accent at 2px, offset onto paper,
+                     * 8.03:1 (light) / 6.82:1 (dark) against it.
                      */}
                     <Link
                         to="/"
-                        className="text-accent hover:text-ink mt-8 inline-block text-[13px] underline decoration-1 underline-offset-4 transition-colors"
+                        className="text-accent hover:text-ink focus-visible:outline-accent mt-8 inline-block rounded-[2px] text-[13px] underline decoration-1 underline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                         <span aria-hidden="true">←</span> Back to the portfolio
                     </Link>

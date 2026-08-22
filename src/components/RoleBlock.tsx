@@ -65,8 +65,13 @@ const RoleBlock: React.FC<RoleBlockProps> = ({ role, nested = false }) => {
                              * against the body copy beside it is 1.13:1
                              * (light) / 1.27:1 (dark), nowhere near the 3:1
                              * WCAG 1.4.1 wants of a colour-only link cue.
+                             *
+                             * The focus ring is accent too, but that comparison
+                             * is against paper rather than the copy -- 8.03:1
+                             * (light) / 6.82:1 (dark), clear of the 3:1 in
+                             * 1.4.11. focus-visible keeps it off mouse clicks.
                              */
-                            className="text-[13px] text-accent underline decoration-1 underline-offset-4 transition-colors hover:text-ink"
+                            className="text-[13px] text-accent underline decoration-1 underline-offset-4 transition-colors hover:text-ink focus-visible:outline-accent rounded-[2px] focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                             {link.label} <span aria-hidden="true">→</span>
                         </a>

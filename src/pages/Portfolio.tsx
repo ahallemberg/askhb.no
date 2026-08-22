@@ -107,7 +107,16 @@ const Portfolio: React.FC = () => {
                             href={personalInfo.data.cvUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="border-rule text-ink-muted hover:border-accent hover:text-accent mt-6 inline-flex items-center gap-2 rounded-[2px] border px-4 py-2 transition-colors"
+                            /*
+                             * Same focus ring as the header's other controls:
+                             * accent at 2px, offset clear of the border so it
+                             * reads as a ring rather than thickening it. On
+                             * paper that is 8.03:1 (light) / 6.82:1 (dark),
+                             * well past the 3:1 WCAG 1.4.11 asks of a focus
+                             * indicator. focus-visible, not focus, so a mouse
+                             * click does not leave the ring behind.
+                             */
+                            className="border-rule text-ink-muted hover:border-accent hover:text-accent focus-visible:outline-accent mt-6 inline-flex items-center gap-2 rounded-[2px] border px-4 py-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                             <Download size={16} />
                             <span className="text-[13px] font-medium">Download CV</span>

@@ -157,7 +157,14 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
             target="_blank"
             rel="noreferrer"
             aria-label={project.name}
-            className={`group ${CARD_CLASS} transition-colors hover:border-ink-faint`}
+            /*
+             * The offset puts the ring outside the card border, on paper, not
+             * on the card's own rule-faint fill: 8.03:1 (light) / 6.82:1 (dark)
+             * against paper, past the 3:1 in WCAG 1.4.11. Against the fill it
+             * would be 6.91:1 / 5.87:1, so the ring clears either way, but only
+             * the outer measurement is the one that applies.
+             */
+            className={`group ${CARD_CLASS} focus-visible:outline-accent transition-colors hover:border-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2`}
         >
             {body}
         </a>

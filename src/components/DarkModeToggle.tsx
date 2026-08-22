@@ -1,11 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
+/*
+ * These two mirror the bootstrap script in index.html, which has already put the
+ * class on <html> before first paint. Both sides read the same two inputs in the
+ * same order and have to stay in step: if they ever disagree, this component
+ * undoes the bootstrap's work on mount and the flash comes back.
+ *
+ * The bootstrap cannot import these -- it has to run ahead of the module graph.
+ *
+ * Guarded because localStorage throws outright in some privacy modes, and an
+ * uncaught throw in a state initialiser takes down the whole React tree, which
+ * is the same failure the bootstrap is wrapped against.
+ */
+const readStoredTheme = (): string | null => {
+    try {
+        return localStorage.getItem('theme');
+    } catch {
+        return null;
+    }
+};
+
+const prefersDarkScheme = (): boolean => {
+    try {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+        return false;
+    }
+};
+
 const DarkModeToggle: React.FC = () => {
     const [darkMode, setDarkMode] = useState<boolean>(() => {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = readStoredTheme();
 
-        return savedTheme === 'dark' || (!savedTheme && prefersDark);
+        return savedTheme === 'dark' || (!savedTheme && prefersDarkScheme());
     });
 
     useEffect(() => {
@@ -15,7 +42,13 @@ const DarkModeToggle: React.FC = () => {
     const toggleDarkMode = () => {
         const newDarkMode = !darkMode;
         setDarkMode(newDarkMode);
-        localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+
+        try {
+            localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+        } catch {
+            // Storage unavailable: the choice still applies to this page view,
+            // it just cannot outlive it.
+        }
     };
 
     return (
