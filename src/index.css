@@ -1,2 +1,33 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-serif: "Newsreader Variable", Georgia, serif;
+    --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+    --paper: #fcfbf8;
+    --ink: #1c1b19;
+    --ink-muted: #4a463f;
+    --ink-faint: #918a7d;
+    --accent: #8a2f2f;
+    --rule: #e2dccf;
+    --rule-faint: #eeeae0;
+}
+
+.dark {
+    --paper: #16150f;
+    --ink: #f0ece0;
+    --ink-muted: #b8b2a1;
+    --ink-faint: #8a8272;
+    /* Warmed toward terracotta: #8a2f2f on near-black goes muddy. */
+    --accent: #d98a72;
+    --rule: #2e2c22;
+    --rule-faint: #252319;
+}
+
+body {
+    background-color: var(--paper);
+    color: var(--ink);
+}
