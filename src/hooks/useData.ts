@@ -2,14 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { 
     R2_PERSONAL_INFO_ENDPOINT, 
     R2_EXPERIENCES_ENDPOINT, 
-    R2_EDUCATION_ENDPOINT, 
+    R2_EDUCATION_ENDPOINT,
+    R2_PROJECTS_ENDPOINT,
 } from '../constants/app'
 
-import { 
-    type PersonalInfo, 
-    type ExperienceItemProps, 
-    type EducationItemProps, 
+import {
+    type PersonalInfo,
+    type OrganisationProps,
+    type ProjectItemProps,
+    type EducationItemProps,
 } from '../types/props'
+
+import { normaliseExperiences } from '../func/organisations'
 
 const fetchJsonData = async <T>(url: string): Promise<T> => {
     const response = await fetch(url)
@@ -21,6 +25,22 @@ const fetchJsonData = async <T>(url: string): Promise<T> => {
     return response.json()
 }
 
+// Returns the fallback only when the object does not exist. Every other failure
+// still throws, so a real outage surfaces rather than rendering as "no projects".
+const fetchJsonDataOrDefault = async <T>(url: string, fallback: T): Promise<T> => {
+    const response = await fetch(url)
+
+    if (response.status === 404) {
+        return fallback
+    }
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`)
+    }
+
+    return response.json()
+}
+
 export const usePersonalInfo = () => {
     return useQuery<PersonalInfo>({
         queryKey: ['personalInfo'],
@@ -29,9 +49,18 @@ export const usePersonalInfo = () => {
 }
 
 export const useExperiences = () => {
-    return useQuery<ExperienceItemProps[]>({
+    return useQuery<OrganisationProps[]>({
         queryKey: ['experiences'],
-        queryFn: () => fetchJsonData<ExperienceItemProps[]>(R2_EXPERIENCES_ENDPOINT),
+        // Normalised in the queryFn, not the component, so the cached value is
+        // already in one shape and consumers never branch.
+        queryFn: async () => normaliseExperiences(await fetchJsonData<unknown>(R2_EXPERIENCES_ENDPOINT)),
+    })
+}
+
+export const useProjects = () => {
+    return useQuery<ProjectItemProps[]>({
+        queryKey: ['projects'],
+        queryFn: () => fetchJsonDataOrDefault<ProjectItemProps[]>(R2_PROJECTS_ENDPOINT, []),
     })
 }
 
@@ -47,13 +76,29 @@ export const useAllPortfolioData = () => {
     const personalInfo = usePersonalInfo()
     const experiences = useExperiences()
     const education = useEducation()
-    
+    const projects = useProjects()
+
     return {
         personalInfo,
         experiences,
         education,
-        isLoading: personalInfo.isLoading || experiences.isLoading || education.isLoading,
-        isError: personalInfo.isError || experiences.isError || education.isError,
-        error: personalInfo.error || experiences.error || education.error
+        projects,
+        /*
+         * isPending, not isLoading. React Query derives `isLoading` as
+         * `isPending && isFetching`, so a query that is pending but *paused* --
+         * status 'pending', fetchStatus 'paused', which the default
+         * networkMode: 'online' produces the moment the browser goes offline --
+         * reports isLoading false while isError is also still false. Portfolio
+         * gates on both, so the page fell through each guard and rendered a
+         * nameless hero over empty ruled sections.
+         *
+         * isPending is true for the whole of that window, so a paused query
+         * holds the loading state instead. Nothing else moves: none of these
+         * queries is disabled or seeded with initialData, so isPending only
+         * ever means "no data yet", and retries and refetches are untouched.
+         */
+        isLoading: personalInfo.isPending || experiences.isPending || education.isPending || projects.isPending,
+        isError: personalInfo.isError || experiences.isError || education.isError || projects.isError,
+        error: personalInfo.error || experiences.error || education.error || projects.error
     }
 }

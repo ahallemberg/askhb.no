@@ -1,2 +1,44 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Palette lives under Tailwind's --color-* namespace so the tokens generate real
+ * utilities (bg-paper, text-ink, border-rule).
+ *
+ * Two keywords are load-bearing:
+ *   - NOT `@theme inline` -- inline bakes the literal hex into every utility, which
+ *     would leave the .dark block below with nothing to override.
+ *   - `static` -- without it Tailwind emits only the theme variables it sees used,
+ *     so an unreferenced light value would be dropped from :root while the
+ *     hand-written .dark block below kept its counterpart, giving a token that
+ *     resolves in dark mode and is undefined in light mode.
+ */
+@theme static {
+    --font-serif: "Newsreader Variable", Georgia, serif;
+    --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+    --color-paper: #fcfbf8;
+    --color-ink: #1c1b19;
+    --color-ink-muted: #4a463f;
+    /* Darkened from #918a7d (3.31:1) to clear WCAG AA 4.5:1 on --color-paper. */
+    --color-ink-faint: #787266;
+    --color-accent: #8a2f2f;
+    --color-rule: #e2dccf;
+    --color-rule-faint: #eeeae0;
+}
+
+.dark {
+    --color-paper: #16150f;
+    --color-ink: #f0ece0;
+    --color-ink-muted: #b8b2a1;
+    --color-ink-faint: #8a8272;
+    /* Warmed toward terracotta: #8a2f2f on near-black goes muddy. */
+    --color-accent: #d98a72;
+    --color-rule: #2e2c22;
+    --color-rule-faint: #252319;
+}
+
+body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+}

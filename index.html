@@ -4,6 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
+
+    <!--
+      Puts the theme class on <html> synchronously, before first paint.
+
+      DarkModeToggle still owns the toggle and the persistence, but it only
+      reaches the DOM from an effect after React mounts. Portfolio's loading and
+      error screens render before that effect runs, so without this a reader who
+      has chosen dark gets light paper on both of them, and a successful load
+      flashes light first.
+
+      The decision below has to stay identical to DarkModeToggle's initial
+      state -- stored theme if there is one, OS preference otherwise -- or the
+      two fight each other on mount. It cannot import the shared helper: this
+      has to run ahead of the module graph, so the duplication is the point.
+
+      Each access is guarded separately. localStorage throws outright in some
+      privacy modes, and this is the first script on the page -- an uncaught
+      throw here would take the whole site down, a far worse fault than the
+      flash it fixes. Guarding them apart also means a blocked storage read
+      still leaves the OS preference to decide.
+    -->
+    <script>
+      (function () {
+          var savedTheme = null;
+          try {
+              savedTheme = localStorage.getItem('theme');
+          } catch (e) {
+              // Storage unavailable; fall through to the OS preference.
+          }
+
+          var prefersDark = false;
+          try {
+              prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          } catch (e) {
+              // No matchMedia; light is the safe default.
+          }
+
+          if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+              document.documentElement.classList.add('dark');
+          }
+      })();
+    </script>
+
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">

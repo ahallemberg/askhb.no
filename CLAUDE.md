@@ -80,7 +80,13 @@ Two routes: `/` → `Portfolio`, and `*` → `NotFound`. Keep it that way — ne
 
 **Adding a social link icon requires three coordinated edits:** import the lucide icon and add it to the `iconComponents` map in `src/components/SocialLink.tsx`, add the name to the `icon` union in `src/types/props.ts`, then add the entry to `src/config/sociallinks.json`.
 
-The `icon` union in `props.ts` is currently `'Github' | 'Linkedin' | 'Mail'`, but `sociallinks.json` already ships a `"Phone"` entry. This only compiles because `Portfolio.tsx` casts with `{...link as SocialLinkItemProps}`. If you touch this area, adding `'Phone'` to the union is the correct fix.
+**Tailwind 4 scans comments, so a class name written in one is compiled into the bundle.** Mentioning the class you just replaced, or naming a selector to explain it, silently ships a dead rule — and if the name is an arbitrary variant, a rule containing an invalid declaration. This happened three times during the editorial redesign, once one commit after it was first written down. Describe classes in prose rather than spelling them, and check the emitted CSS if unsure.
+
+The reverse also bites: some utility names are ordinary English (`ring`, `filter`, `invert`, `block`, `inline`, `static`, `visible`), so prose about a "greyscale filter" or a "navy ring" emits those utilities. That is a few hundred harmless bytes and is not worth contorting the prose to avoid. Suppressing them with `@source not inline(...)` would silently break any genuine future use of the same class, so don't.
+
+**The page background is painted by full-viewport divs, not `body`.** `Portfolio.tsx` and `NotFound.tsx` each render a `min-h-screen` root div, so `body`'s own background only shows in the overscroll gutter. Retheming the page means changing those divs; changing `body` alone looks like it worked and doesn't.
+
+**A crash during render is not the `ErrorMessage` path.** `Portfolio` gates on the query aggregate, so a fetch failure renders `ErrorMessage` — but a component that throws while rendering (dereferencing a field the bucket didn't supply) unmounts the tree and shows the reader a blank page. There is no ErrorBoundary. `src/func/organisations.ts` is the guard for experiences, and it validates roles as well as rows for exactly this reason; anything new that reads remote fields needs the same care.
 
 ## Conventions
 

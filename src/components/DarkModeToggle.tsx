@@ -1,11 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
+/*
+ * These two mirror the bootstrap script in index.html, which has already put the
+ * class on <html> before first paint. Both sides read the same two inputs in the
+ * same order and have to stay in step: if they ever disagree, this component
+ * undoes the bootstrap's work on mount and the flash comes back.
+ *
+ * The bootstrap cannot import these -- it has to run ahead of the module graph.
+ *
+ * Guarded because localStorage throws outright in some privacy modes, and an
+ * uncaught throw in a state initialiser takes down the whole React tree, which
+ * is the same failure the bootstrap is wrapped against.
+ */
+const readStoredTheme = (): string | null => {
+    try {
+        return localStorage.getItem('theme');
+    } catch {
+        return null;
+    }
+};
+
+const prefersDarkScheme = (): boolean => {
+    try {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+        return false;
+    }
+};
+
 const DarkModeToggle: React.FC = () => {
     const [darkMode, setDarkMode] = useState<boolean>(() => {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = readStoredTheme();
 
-        return savedTheme === 'dark' || (!savedTheme && prefersDark);
+        return savedTheme === 'dark' || (!savedTheme && prefersDarkScheme());
     });
 
     useEffect(() => {
@@ -15,13 +42,27 @@ const DarkModeToggle: React.FC = () => {
     const toggleDarkMode = () => {
         const newDarkMode = !darkMode;
         setDarkMode(newDarkMode);
-        localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+
+        try {
+            localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+        } catch {
+            // Storage unavailable: the choice still applies to this page view,
+            // it just cannot outlive it.
+        }
     };
 
     return (
         <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
+            /*
+             * Deliberately not the accent hover the social links take: this
+             * sits in the same header corner as them, and two accent hovers a
+             * few pixels apart would read as one control. It wakes to full ink
+             * on a rule-faint plate instead -- 14.33:1 (light) / 13.34:1
+             * (dark) on that plate, up from 4.61:1 / 4.80:1 at rest, both of
+             * which clear the 3:1 WCAG 1.4.11 asks of an icon either way.
+             */
+            className="text-ink-faint hover:text-ink hover:bg-rule-faint focus-visible:outline-accent rounded-[2px] p-2 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
             {darkMode ? (
