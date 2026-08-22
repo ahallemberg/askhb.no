@@ -75,8 +75,15 @@ const Portfolio: React.FC = () => {
                         <DarkModeToggle />
                     </div>
 
+                    {/*
+                     * The stored URL when there is one, the bucket's fixed key
+                     * otherwise -- the two name the same object, and the stored
+                     * one differs only by the query that gets a freshly uploaded
+                     * photo past the edge cache. Falsy rather than nullish, so a
+                     * field written as an empty string falls back as well.
+                     */}
                     <img
-                        src={R2_PROFILE_PICTURE}
+                        src={personalInfo.data?.profilePictureUrl || R2_PROFILE_PICTURE}
                         alt="Ask Hallem-Berg"
                         className="w-26 h-26 md:w-28 md:h-28 mx-auto mb-5"
                     />
