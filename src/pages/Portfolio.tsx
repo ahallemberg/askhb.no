@@ -130,16 +130,24 @@ const Portfolio: React.FC = () => {
                     </section>
                 </FadeIn>
 
-                <FadeIn delay={sectionDelay}>
-                    <section className="mb-16">
-                        <SectionHeading>Experience</SectionHeading>
-                        {experiences.data?.map((organisation: OrganisationProps, index: number) => (
-                            <FadeIn key={index} delay={index * itemStagger}>
-                                <OrganisationItem organisation={organisation} />
-                            </FadeIn>
-                        ))}
-                    </section>
-               </FadeIn>
+                {/*
+                 * Guarded the same way Projects is below, and for the same reason:
+                 * normaliseExperiences returns [] for a file it cannot read, and a
+                 * ruled heading with nothing under it looks like the page broke
+                 * rather than like there is nothing to show.
+                 */}
+                {!!experiences.data?.length && (
+                    <FadeIn delay={sectionDelay}>
+                        <section className="mb-16">
+                            <SectionHeading>Experience</SectionHeading>
+                            {experiences.data.map((organisation: OrganisationProps, index: number) => (
+                                <FadeIn key={index} delay={index * itemStagger}>
+                                    <OrganisationItem organisation={organisation} />
+                                </FadeIn>
+                            ))}
+                        </section>
+                    </FadeIn>
+                )}
 
                 {/*
                  * projects.json does not exist in the bucket yet and useProjects
