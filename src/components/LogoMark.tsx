@@ -43,17 +43,47 @@ type MarkComponent = React.FC<{ className?: string; label?: string }>;
  *
  * Keyed on the file name because the URL is all this component is given; the
  * durable fix is a discriminator stored with the organisation in R2.
+ *
+ * Written in the spelling a human would use; both sides of the comparison are
+ * normalised before matching, so separators are not part of the key. This list
+ * exists to enumerate the *words*, not their punctuation.
  */
-const MARKS: Record<string, MarkComponent> = {
+const MARK_ALIASES: Record<string, MarkComponent> = {
     'logo-qfree': QFreeMark,
     'q-free': QFreeMark,
     'q-free_logo': QFreeMark,
-    'qfree': QFreeMark,
 };
 
-/** Last path segment of a URL, without query, fragment or extension, lowercased. */
+/*
+ * Strips everything that is not a letter or digit, and lowercases.
+ *
+ * The uploader sanitises file names by replacing every run of non-alphanumeric
+ * characters with a hyphen, so the same mark arrives spelled differently
+ * depending on when it was uploaded: Q-Free_logo.svg is stored as
+ * q-free-logo.svg. Matching on the raw name meant one underscore-turned-hyphen
+ * dropped the mark to the image branch and put the greyscale filter on the one
+ * logo that cannot survive it -- a failure that shows up only in production,
+ * on a logo that looks nearly right.
+ *
+ * Removing the separators rather than enumerating their spellings keeps the
+ * registry an exact match on a known set: q-free-logo, q-free_logo, qfreelogo
+ * and "Q-Free logo" reduce to one key, while logo-qfree and acme-logo stay
+ * the distinct strings they are. Note the cost -- a future mark whose file name
+ * reduces to a registered key renders as that company. Names differing only
+ * in punctuation are the same key here by design.
+ */
+const normalise = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const MARKS: Record<string, MarkComponent> = Object.fromEntries(
+    Object.entries(MARK_ALIASES).map(([alias, Mark]) => [normalise(alias), Mark]),
+);
+
+/**
+ * Last path segment of a URL, without query, fragment or extension, normalised
+ * to its letters and digits.
+ */
 const markKey = (url: string): string =>
-    url.split(/[?#]/)[0].split('/').pop()?.replace(/\.[^./]+$/, '').toLowerCase() ?? '';
+    normalise(url.split(/[?#]/)[0].split('/').pop()?.replace(/\.[^./]+$/, '') ?? '');
 
 interface LogoMarkProps {
     url?: string;
@@ -76,11 +106,13 @@ const LogoMark: React.FC<LogoMarkProps> = ({ url, scale = 1, alt = '' }) => {
     if (!url) return null;
 
     /*
-     * hasOwn, not a bare index: markKey is derived from a remote URL and
-     * lowercased, so a logo stored as constructor.png or __proto__.png would
-     * otherwise reach Object.prototype, return something truthy that is not a
-     * component, and make React throw "Element type is invalid" -- taking the
-     * page down rather than falling through to the image branch.
+     * hasOwn, not a bare index: markKey is derived from a remote URL, and MARKS
+     * is an ordinary object, so a logo stored as constructor.png would otherwise
+     * reach Object.prototype, return something truthy that is not a component,
+     * and make React throw "Element type is invalid" -- taking the page down
+     * rather than falling through to the image branch. Normalising does not
+     * remove the hazard: it strips the underscores out of __proto__ but leaves
+     * constructor, valueOf and toString spelled exactly as inherited keys.
      */
     const key = markKey(url);
     const Mark = Object.hasOwn(MARKS, key) ? MARKS[key] : undefined;
