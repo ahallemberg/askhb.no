@@ -21,7 +21,15 @@ const DarkModeToggle: React.FC = () => {
     return (
         <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
+            /*
+             * Deliberately not the accent hover the social links take: this
+             * sits in the same header corner as them, and two accent hovers a
+             * few pixels apart would read as one control. It wakes to full ink
+             * on a rule-faint plate instead -- 14.33:1 (light) / 13.34:1
+             * (dark) on that plate, up from 4.61:1 / 4.80:1 at rest, both of
+             * which clear the 3:1 WCAG 1.4.11 asks of an icon either way.
+             */
+            className="text-ink-faint hover:text-ink hover:bg-rule-faint focus-visible:outline-accent rounded-[2px] p-2 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
             aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
             {darkMode ? (

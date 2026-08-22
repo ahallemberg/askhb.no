@@ -24,7 +24,7 @@ import socialLinks from '../config/sociallinks.json';
  *
  * 36rem of box minus the 1.5rem of padding on each side leaves a 33rem text
  * column, which puts the About paragraph at ~66 characters a line -- measured in
- * the browser against the real copy, not estimated. The old max-w-6xl was 1150px
+ * the browser against the real copy, not estimated. The old 6xl cap was 1150px
  * and ~140 characters; 42rem, the value the plan proposed, is ~84 and still well
  * past the 65-75 a reading measure wants.
  *
