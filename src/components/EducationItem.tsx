@@ -97,9 +97,20 @@ const EducationItem: React.FC<EducationItemProps> = ({
              * figure in ink is 16.631:1 / 15.484:1.
              */}
             {gpa && (
-                <div className="mt-3 shrink-0 sm:mt-0 sm:pt-0.5 sm:text-right">
+                /*
+                 * Capped and allowed to wrap, rather than held on one line. The
+                 * regex takes the whole remainder of the line, so "4,79/5" is
+                 * the expected value but "4,79/5 (ranked 3rd of 210)" is a
+                 * legal one -- and nowrap on a shrink-0 column turns that into
+                 * ~300px that cannot break, which on the stacked mobile branch
+                 * is page-level horizontal scroll. The cap keeps a long value
+                 * out of the description's column on the wide branch, and
+                 * break-words handles the pathological case of a long value
+                 * with no space in it to break at.
+                 */
+                <div className="mt-3 shrink-0 break-words sm:mt-0 sm:max-w-[10rem] sm:pt-0.5 sm:text-right">
                     <div className="text-[10px] uppercase tracking-[0.15em] text-ink-muted">GPA</div>
-                    <div className="mt-1 whitespace-nowrap font-serif text-base text-ink">{gpa}</div>
+                    <div className="mt-1 font-serif text-base text-ink">{gpa}</div>
                 </div>
             )}
         </article>
