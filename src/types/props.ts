@@ -12,6 +12,41 @@ export interface PortfolioLink {
     url: string;
 }
 
+export interface RoleProps {
+    title: string;
+    date: string;
+    description: string;
+    // The ruled "Result" line. Absent on entries with no clean headline number;
+    // the layout closes up rather than leaving a gap.
+    result?: string;
+    skills: string[];
+    readMoreUrl?: string;
+    links?: PortfolioLink[];
+}
+
+export interface OrganisationProps {
+    company: string;
+    location?: string;
+    date: string;
+    logoUrl?: string;
+    // Optical size correction. Marks differ in ink coverage, so identical boxes do
+    // not give identical visual weight. Default 1.
+    logoScale?: number;
+    // e.g. "Volunteer, 25+ hrs/week".
+    commitment?: string;
+    roles: RoleProps[];
+}
+
+export interface ProjectItemProps {
+    name: string;
+    description: string;
+    url?: string;
+    screenshotUrl?: string;
+    figure?: string;
+    figureCaption?: string;
+    skills?: string[];
+}
+
 export interface ExperienceItemProps {
     title: string;
     company: string;
@@ -34,7 +69,7 @@ export interface EducationItemProps {
 export interface SocialLinkItemProps {
     name: string;
     url: string;
-    icon: 'Github' | 'Linkedin' | 'Mail';
+    icon: 'Github' | 'Linkedin' | 'Mail' | 'Phone';
 }
 
 export interface FadeInProps {
