@@ -83,7 +83,21 @@ export const useAllPortfolioData = () => {
         experiences,
         education,
         projects,
-        isLoading: personalInfo.isLoading || experiences.isLoading || education.isLoading || projects.isLoading,
+        /*
+         * isPending, not isLoading. React Query derives `isLoading` as
+         * `isPending && isFetching`, so a query that is pending but *paused* --
+         * status 'pending', fetchStatus 'paused', which the default
+         * networkMode: 'online' produces the moment the browser goes offline --
+         * reports isLoading false while isError is also still false. Portfolio
+         * gates on both, so the page fell through each guard and rendered a
+         * nameless hero over empty ruled sections.
+         *
+         * isPending is true for the whole of that window, so a paused query
+         * holds the loading state instead. Nothing else moves: none of these
+         * queries is disabled or seeded with initialData, so isPending only
+         * ever means "no data yet", and retries and refetches are untouched.
+         */
+        isLoading: personalInfo.isPending || experiences.isPending || education.isPending || projects.isPending,
         isError: personalInfo.isError || experiences.isError || education.isError || projects.isError,
         error: personalInfo.error || experiences.error || education.error || projects.error
     }
