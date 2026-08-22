@@ -1,11 +1,27 @@
 import { type ExperienceItemProps, type OrganisationProps, type RoleProps, type PortfolioLink } from '../types/props';
 
+const DEFAULT_LINK_LABEL = 'Read more';
+
 // R2 entries may carry either shape: `links` since multi-link support, or a lone
 // `readMoreUrl` from before it. Normalising here keeps the markup to one path.
 // Moved from ExperienceItem.tsx, which this work replaces.
+//
+// The label is defaulted on both paths, not just the readMoreUrl one: an anchor
+// whose only content is an aria-hidden arrow has no accessible name at all (WCAG
+// 4.1.2), so a saved-but-unlabelled link would read as nothing in a link list. An
+// entry with no url is dropped outright -- there is no link to name. A `links`
+// array that survives none of that falls through to readMoreUrl, which admin
+// derives from the first link anyway.
 export const resolveLinks = (links?: PortfolioLink[], readMoreUrl?: string): PortfolioLink[] => {
-    if (links && links.length > 0) return links;
-    return readMoreUrl ? [{ label: 'Read more', url: readMoreUrl }] : [];
+    const labelled = (links ?? [])
+        .filter((link): link is PortfolioLink => typeof link?.url === 'string' && link.url.trim() !== '')
+        .map((link) => ({
+            url: link.url,
+            label: typeof link.label === 'string' && link.label.trim() !== '' ? link.label : DEFAULT_LINK_LABEL
+        }));
+
+    if (labelled.length > 0) return labelled;
+    return readMoreUrl ? [{ label: DEFAULT_LINK_LABEL, url: readMoreUrl }] : [];
 };
 
 const LOCATION_SEPARATOR = ' - ';
@@ -28,8 +44,36 @@ const splitCompany = (raw: string): { company: string; location?: string } => {
     return { company, location };
 };
 
+/*
+ * A role has to be an object before the markup can read `date` or `title` off it:
+ * OrganisationItem reaches straight for roles[0].date, so a null element there is
+ * a render-time throw, and Portfolio cannot catch it -- the page white-screens
+ * rather than showing ErrorMessage. Arrays are rejected too; they survive the
+ * property reads but render as an empty role block.
+ *
+ * Nothing beyond the shape is checked. A role missing `title` renders one empty
+ * heading, which is a visible gap in one entry rather than a lost page.
+ */
+const isRole = (value: unknown): value is RoleProps =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
 const isOrganisation = (value: unknown): value is OrganisationProps =>
-    typeof value === 'object' && value !== null && Array.isArray((value as { roles?: unknown }).roles);
+    typeof value === 'object' && value !== null &&
+    Array.isArray((value as { roles?: unknown }).roles) &&
+    (value as { roles: unknown[] }).roles.every(isRole);
+
+/*
+ * Malformed role elements are dropped before the row itself is judged, so one
+ * stray null costs that role rather than the whole employer -- OrganisationItem
+ * renders a roleless organisation as its header alone. Anything that is not
+ * organisation-shaped passes through untouched, for isOrganisation to reject.
+ */
+const pruneRoles = (value: unknown): unknown => {
+    if (typeof value !== 'object' || value === null) return value;
+    const roles = (value as { roles?: unknown }).roles;
+    if (!Array.isArray(roles)) return value;
+    return { ...value, roles: roles.filter(isRole) };
+};
 
 // A legacy entry needs a company string to group by; anything else is skipped
 // rather than allowed to throw. useAllPortfolioData collapses every query into one
@@ -45,10 +89,15 @@ const isLegacyEntry = (value: unknown): value is ExperienceItemProps =>
 export const normaliseExperiences = (value: unknown): OrganisationProps[] => {
     if (!Array.isArray(value)) return [];
     if (value.length === 0) return [];
+    // Pruned before the shape is decided, not after: an organisation whose roles
+    // array holds a null fails isOrganisation, and would then be read as a legacy
+    // row and rebuilt from fields it does not have.
+    const pruned = value.map(pruneRoles);
+
     // The file is written wholesale, so the first element decides which shape it is.
     // Still filtered rather than cast: a stray malformed row would otherwise reach a
     // consumer that maps over `roles` and take the page down.
-    if (isOrganisation(value[0])) return value.filter(isOrganisation);
+    if (isOrganisation(pruned[0])) return pruned.filter(isOrganisation);
 
     // Map keeps insertion order for string keys, so first-appearance order needs no
     // separate index — which matters because the two rows of one employer are not

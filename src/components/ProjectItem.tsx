@@ -22,6 +22,21 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     const skills = project.skills ?? [];
 
     /*
+     * `name` is the one required field the card cannot simply print: it is
+     * trimmed, compared and used as the link's accessible name. A project saved
+     * with a url but no name yet -- a half-finished entry, which is the likely
+     * way this happens -- would throw on the trim and take the whole page with
+     * it, since Portfolio gates every section on one isError.
+     *
+     * So the card renders without its heading rather than disappearing: the
+     * entry is real, and an author who has typed a description and a url should
+     * see it on the page and notice the missing name, not wonder why nothing
+     * saved. The host takes over as the visible label below, because showHost
+     * has nothing to match it against.
+     */
+    const name = typeof project.name === 'string' ? project.name.trim() : '';
+
+    /*
      * A malformed url would throw out of URL and take the page with it, so the
      * host is best-effort: a bad value still gets an href (dead, but visible in
      * the status bar) and simply loses the printed hostname.
@@ -41,7 +56,7 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * name does not -- which is also the only case where it works as a check on
      * a wrong url.
      */
-    const showHost = host !== undefined && host.toLowerCase() !== project.name.trim().toLowerCase();
+    const showHost = host !== undefined && host.toLowerCase() !== name.toLowerCase();
 
     const body = (
         <>
@@ -64,9 +79,11 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
             )}
 
             <div className="flex flex-1 flex-col p-5">
-                <h3 className="font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
-                    {project.name}
-                </h3>
+                {name && (
+                    <h3 className="font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
+                        {name}
+                    </h3>
+                )}
 
                 <p className="mt-2 leading-relaxed text-ink-muted">{project.description}</p>
 
@@ -146,17 +163,22 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * figure, caption, every skill -- and a screen reader's link list turns into
      * a paragraph per card. The visible name is inside the label, so 2.5.3 holds.
      *
+     * Omitted outright, not set to an empty string, when the name is missing: an
+     * empty aria-label leaves the link with no accessible name at all (WCAG
+     * 4.1.2), while omitting it falls back to the card's contents. That is the
+     * verbose reading the label exists to prevent, but a long name beats none.
+     *
      * The card holds no second link, so wrapping it is still valid HTML. If one
-     * is ever added, this has to become a stretched link (a on the name, with
-     * after:absolute after:inset-0 over a relative card) -- an anchor inside an
-     * anchor is not.
+     * is ever added, this has to become a stretched link -- the name as the
+     * anchor, with an absolutely positioned pseudo-element pinned to the inset
+     * of a positioned card -- because an anchor inside an anchor is not.
      */
     return (
         <a
             href={project.url}
             target="_blank"
             rel="noreferrer"
-            aria-label={project.name}
+            aria-label={name || undefined}
             /*
              * The offset puts the ring outside the card border, on paper, not
              * on the card's own rule-faint fill: 8.03:1 (light) / 6.82:1 (dark)

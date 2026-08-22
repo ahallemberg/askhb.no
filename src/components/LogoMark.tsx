@@ -75,7 +75,15 @@ const LogoMark: React.FC<LogoMarkProps> = ({ url, scale = 1, alt = '' }) => {
      */
     if (!url) return null;
 
-    const Mark = MARKS[markKey(url)];
+    /*
+     * hasOwn, not a bare index: markKey is derived from a remote URL and
+     * lowercased, so a logo stored as constructor.png or __proto__.png would
+     * otherwise reach Object.prototype, return something truthy that is not a
+     * component, and make React throw "Element type is invalid" -- taking the
+     * page down rather than falling through to the image branch.
+     */
+    const key = markKey(url);
+    const Mark = Object.hasOwn(MARKS, key) ? MARKS[key] : undefined;
 
     return (
         <span className="flex h-8 w-8 shrink-0 items-center justify-center">

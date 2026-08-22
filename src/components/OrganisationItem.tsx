@@ -8,9 +8,14 @@ interface OrganisationItemProps {
 
 const OrganisationItem: React.FC<OrganisationItemProps> = ({ organisation }) => {
     /*
-     * normaliseExperiences filters malformed rows, but a hand-edited file can
-     * still deliver an employer with no roles. Guarded so that case renders the
-     * header alone rather than an orphaned rail with nothing behind it.
+     * normaliseExperiences prunes role elements it cannot turn into objects and
+     * drops rows whose `roles` is not an array at all, so what arrives here is
+     * always an array of objects -- roles[0].date below depends on that. It can
+     * still be empty, either because the employer was saved with no roles or
+     * because every role it carried was pruned, so that case is guarded to
+     * render the header alone rather than an orphaned rail with nothing behind
+     * it. The ?? keeps this component honest if it is ever handed data that did
+     * not come through the normaliser.
      */
     const roles = organisation.roles ?? [];
 
