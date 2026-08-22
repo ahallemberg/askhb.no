@@ -8,9 +8,10 @@ interface OrganisationItemProps {
 
 const OrganisationItem: React.FC<OrganisationItemProps> = ({ organisation }) => {
     /*
-     * normaliseExperiences prunes role elements it cannot turn into objects and
-     * drops rows whose `roles` is not an array at all, so what arrives here is
-     * always an array of objects -- roles[0].date below depends on that. It can
+     * normaliseExperiences builds this array itself, dropping role elements it
+     * cannot turn into objects, so what arrives here is always an array of
+     * objects with fields of the right type -- roles[0].date below depends on
+     * that, and so does everything RoleBlock renders. It can
      * still be empty, either because the employer was saved with no roles or
      * because every role it carried was pruned, so that case is guarded to
      * render the header alone rather than an orphaned rail with nothing behind

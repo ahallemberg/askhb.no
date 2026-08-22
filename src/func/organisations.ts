@@ -1,4 +1,4 @@
-import { type ExperienceItemProps, type OrganisationProps, type RoleProps, type PortfolioLink } from '../types/props';
+import { type OrganisationProps, type RoleProps, type PortfolioLink } from '../types/props';
 
 const DEFAULT_LINK_LABEL = 'Read more';
 
@@ -45,90 +45,167 @@ const splitCompany = (raw: string): { company: string; location?: string } => {
 };
 
 /*
- * A role has to be an object before the markup can read `date` or `title` off it:
- * OrganisationItem reaches straight for roles[0].date, so a null element there is
- * a render-time throw, and Portfolio cannot catch it -- the page white-screens
- * rather than showing ErrorMessage. Arrays are rejected too; they survive the
- * property reads but render as an empty role block.
- *
- * Nothing beyond the shape is checked. A role missing `title` renders one empty
- * heading, which is a visible gap in one entry rather than a lost page.
+ * An entry, and each role inside it, has to be a plain object before the markup can
+ * read `date` or `title` off it: OrganisationItem reaches straight for
+ * roles[0].date, so a null element there is a render-time throw, and Portfolio
+ * cannot catch it -- the page white-screens rather than showing ErrorMessage.
+ * Arrays are rejected too; they survive the property reads and render as an empty
+ * entry.
  */
-const isRole = (value: unknown): value is RoleProps =>
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isOrganisation = (value: unknown): value is OrganisationProps =>
-    typeof value === 'object' && value !== null &&
-    Array.isArray((value as { roles?: unknown }).roles) &&
-    (value as { roles: unknown[] }).roles.every(isRole);
+/*
+ * Field *types* are checked, not just the shape of the row around them. The markup
+ * guards against a field being missing -- RoleBlock's `skills ?? []`,
+ * splitParagraphs' typeof test -- but `??` says nothing about a field that is
+ * present and wrong: a skills list saved as the string "React" has a truthy length
+ * and no .map, so it reaches .map and throws, and a title, date or result saved as
+ * an object throws inside React, which refuses to render one as a child. Either way
+ * the page is gone, because useAllPortfolioData collapses every query into one
+ * isError and there is nothing left to show ErrorMessage with.
+ *
+ * A wrong-typed field is therefore dropped rather than passed on, and it costs the
+ * field rather than the role: an entry whose skills were mangled still shows its
+ * title, dates and description. That is the same trade the role pruning below makes
+ * for one bad role inside a good employer.
+ */
+const asText = (value: unknown): string | undefined =>
+    typeof value === 'string' ? value : undefined;
+
+// One unrenderable tag costs itself, not the other ten beside it.
+const asTextList = (value: unknown): string[] | undefined =>
+    Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : undefined;
 
 /*
- * Malformed role elements are dropped before the row itself is judged, so one
- * stray null costs that role rather than the whole employer -- OrganisationItem
- * renders a roleless organisation as its header alone. Anything that is not
- * organisation-shaped passes through untouched, for isOrganisation to reject.
+ * Both shapes converge here: a role inside a grouped organisation, and a legacy row,
+ * which carries the very same field names one level up.
+ *
+ * RoleProps types title, date, description and skills as required because admin
+ * writes all four; the cast restates that contract rather than weakening it, while
+ * letting a hand-edited file that drops one leave a gap in a single entry instead of
+ * losing the role wholesale.
  */
-const pruneRoles = (value: unknown): unknown => {
-    if (typeof value !== 'object' || value === null) return value;
-    const roles = (value as { roles?: unknown }).roles;
-    if (!Array.isArray(roles)) return value;
-    return { ...value, roles: roles.filter(isRole) };
+const toRole = (value: Record<string, unknown>): RoleProps => ({
+    title: asText(value.title),
+    date: asText(value.date),
+    description: asText(value.description),
+    result: asText(value.result),
+    skills: asTextList(value.skills),
+    readMoreUrl: asText(value.readMoreUrl),
+    // Only that it is a list; the elements are resolveLinks' business, and it
+    // already drops the ones it cannot make a labelled url out of.
+    links: Array.isArray(value.links) ? (value.links as PortfolioLink[]) : undefined
+} as RoleProps);
+
+/*
+ * The grouped shape admin now writes. It needs a name and a list of roles to be one:
+ * an object carrying roles and no `company` string renders as an empty heading over
+ * them, which reads as a broken page rather than a hand-edit gone wrong.
+ *
+ * Says nothing about the role *elements* -- they are filtered here instead, so a
+ * single null role can never cost the entry its identity and get it re-read as a
+ * legacy row, rebuilt from fields it does not have and stripped of every role it
+ * does. An organisation whose roles all fall away still renders its header.
+ */
+const toOrganisation = (value: Record<string, unknown>): OrganisationProps | undefined => {
+    if (typeof value.company !== 'string' || !Array.isArray(value.roles)) return undefined;
+
+    return {
+        company: value.company.trim(),
+        location: asText(value.location),
+        date: asText(value.date),
+        // LogoMark calls .split on this the moment it is truthy.
+        logoUrl: asText(value.logoUrl),
+        logoScale: typeof value.logoScale === 'number' ? value.logoScale : undefined,
+        commitment: asText(value.commitment),
+        roles: value.roles.filter(isPlainObject).map(toRole)
+    } as OrganisationProps;
 };
 
-// A legacy entry needs a company string to group by; anything else is skipped
-// rather than allowed to throw. useAllPortfolioData collapses every query into one
-// isError, so an exception here would blank the whole portfolio over one bad row.
-const isLegacyEntry = (value: unknown): value is ExperienceItemProps =>
-    typeof value === 'object' && value !== null && typeof (value as { company?: unknown }).company === 'string';
+/*
+ * The flat shape that predates grouping: one row per role, the employer repeated
+ * across rows, its location still inside the company string. Rebuilt as a one-role
+ * organisation so that both shapes leave here identical and the rows sharing an
+ * employer can be merged like any others.
+ */
+const toLegacyOrganisation = (value: Record<string, unknown>): OrganisationProps | undefined => {
+    if (typeof value.company !== 'string') return undefined;
 
-// Accepts the grouped shape admin now writes, or the flat array that predates it.
-//
-// Returns [] for anything unrecognisable rather than throwing: fetchJsonData casts
-// without validating, so this function is the only guard, and a malformed file
-// should cost one empty section rather than the whole page.
+    const { company, location } = splitCompany(value.company);
+    const role = toRole(value);
+
+    // The flat shape carries no organisation-level span and this repo has no
+    // dateRange to compute one from, so the first role's date stands in. admin
+    // writes a real span across the roles, so once it has saved once this branch
+    // stops being reached and the stored span takes over.
+    return { company, location, date: role.date, roles: [role] } as OrganisationProps;
+};
+
+/*
+ * One employer, one entry, however its rows were written -- including an employer
+ * that appears in both shapes at once, which is precisely what a bucket halfway
+ * through a rewrite holds. Later appearances contribute their roles in file order
+ * and fill in only the organisation fields the first left empty; where both carry a
+ * value the first wins, since they agree in practice and an employer has one
+ * location.
+ */
+const addOrganisation = (byCompany: Map<unknown, OrganisationProps>, incoming: OrganisationProps): void => {
+    /*
+     * A row with no usable name cannot be grouped by one. Keying every such row on
+     * '' would file unrelated jobs under a single blank heading, so each takes a
+     * fresh object key instead, which no company name can collide with.
+     */
+    const key = incoming.company === '' ? {} : incoming.company;
+    const existing = byCompany.get(key);
+
+    if (!existing) {
+        byCompany.set(key, incoming);
+        return;
+    }
+
+    byCompany.set(key, {
+        company: existing.company,
+        location: existing.location ?? incoming.location,
+        date: existing.date ?? incoming.date,
+        logoUrl: existing.logoUrl ?? incoming.logoUrl,
+        logoScale: existing.logoScale ?? incoming.logoScale,
+        commitment: existing.commitment ?? incoming.commitment,
+        roles: [...existing.roles, ...incoming.roles]
+    });
+};
+
+/*
+ * Accepts the grouped shape admin now writes, the flat array that predates it, or a
+ * file holding some of each.
+ *
+ * Dispatched per element rather than sniffed off the first one. Surviving the bucket
+ * mid-rewrite is the whole reason this module exists, and that is the one moment the
+ * two shapes coexist -- where reading the file's shape from element 0 failed
+ * silently: a grouped organisation in an otherwise-flat file was rebuilt as a single
+ * role with every field undefined, so the page printed the employer's name over a
+ * blank entry and looked finished. Per element, a row that cannot be read costs
+ * itself and nothing else.
+ *
+ * Returns [] for anything unrecognisable rather than throwing: fetchJsonData casts
+ * without validating, so this function is the only guard, and a malformed file
+ * should cost one empty section rather than the whole page.
+ */
 export const normaliseExperiences = (value: unknown): OrganisationProps[] => {
     if (!Array.isArray(value)) return [];
-    if (value.length === 0) return [];
-    // Pruned before the shape is decided, not after: an organisation whose roles
-    // array holds a null fails isOrganisation, and would then be read as a legacy
-    // row and rebuilt from fields it does not have.
-    const pruned = value.map(pruneRoles);
 
-    // The file is written wholesale, so the first element decides which shape it is.
-    // Still filtered rather than cast: a stray malformed row would otherwise reach a
-    // consumer that maps over `roles` and take the page down.
-    if (isOrganisation(pruned[0])) return pruned.filter(isOrganisation);
-
-    // Map keeps insertion order for string keys, so first-appearance order needs no
+    // Map keeps insertion order for its keys, so first-appearance order needs no
     // separate index — which matters because the two rows of one employer are not
     // adjacent in the live file.
-    const byCompany = new Map<string, OrganisationProps>();
+    const byCompany = new Map<unknown, OrganisationProps>();
 
     for (const item of value) {
-        if (!isLegacyEntry(item)) continue;
+        if (!isPlainObject(item)) continue;
 
-        const { company, location } = splitCompany(item.company);
-        const role: RoleProps = {
-            title: item.title,
-            date: item.date,
-            description: item.description,
-            skills: item.skills,
-            readMoreUrl: item.readMoreUrl,
-            links: item.links
-        };
-
-        const existing = byCompany.get(company);
-        if (existing) {
-            existing.roles.push(role);
-            // First entry wins; they agree in practice, and an organisation has one.
-            if (!existing.location && location) existing.location = location;
-        } else {
-            // The flat shape carries no organisation-level span and this repo has no
-            // dateRange to compute one from, so the first role's date stands in.
-            // admin writes a real span across the roles, so once it has saved once
-            // this branch stops being reached and the stored span takes over.
-            byCompany.set(company, { company, location, date: item.date, roles: [role] });
-        }
+        // Grouped first: an entry carrying `roles` means them, even if it also
+        // carries the legacy fields.
+        const organisation = toOrganisation(item) ?? toLegacyOrganisation(item);
+        if (organisation) addOrganisation(byCompany, organisation);
     }
 
     return [...byCompany.values()];

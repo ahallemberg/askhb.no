@@ -47,6 +47,11 @@ export interface ProjectItemProps {
     skills?: string[];
 }
 
+// The flat shape the bucket still holds: one entry per role, the employer repeated
+// across entries, location inside the company string. Nothing imports it -- the
+// normaliser reads those entries field by field, since a hand-edited file cannot be
+// trusted to match a type -- but it stays as the written record of that shape until
+// admin has rewritten the file into OrganisationProps.
 export interface ExperienceItemProps {
     title: string;
     company: string;
