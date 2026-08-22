@@ -9,6 +9,29 @@
  * The path data is transferred verbatim from the vendor SVG. The translate()
  * wrapper is load-bearing: the paths live in a translated coordinate space and
  * render off-canvas without it.
+ *
+ * WEIGHT. The body is a solid field, so binding it straight to --color-ink lays
+ * down far more ink than the three raster marks beside it, which are tuned to run
+ * from ~2.4:1 at their faintest band to ~7:1 at their strongest. On a page showing
+ * all four, Q-Free read as a bright chip while Ascend and Computas sat quiet.
+ * Scale cannot fix that -- it changes how big the mark is, not how much ink it
+ * puts down -- so the group is dropped to a measured opacity instead, landing the
+ * body on 6.98:1 (light) and 6.82:1 (dark): level with the raster marks' strongest
+ * band rather than above it.
+ *
+ * Opacity on the group, rather than a lighter fill on the body, because it is the
+ * one mechanism that cannot cost the counters. They are painted --color-paper, so
+ * compositing the group over paper leaves them at exactly paper, whatever the
+ * alpha -- counter-against-body therefore stays equal to body-against-paper by
+ * construction, and retuning the weight can never quietly flatten the letterforms
+ * this component exists to preserve. A lighter fill on the body alone would need
+ * re-checking against the counters every time it moved.
+ *
+ * Two alphas because the arithmetic is not symmetric: lifting a near-black page
+ * toward ink gains contrast much faster than darkening cream paper does, so no
+ * single value serves both -- the light alpha lands dark at 8.61:1, and the dark
+ * alpha lands light at 5.14:1. Each theme carries the value that puts it on 7:1,
+ * the same per-theme split the raster filter makes in LogoMark.
  */
 interface QFreeMarkProps {
     className?: string;
@@ -24,7 +47,7 @@ const QFreeMark: React.FC<QFreeMarkProps> = ({ className, label = '' }) => (
         focusable="false"
         {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
-        <g transform="translate(-328.23652,-475.55709)">
+        <g className="opacity-[0.73] dark:opacity-[0.64]" transform="translate(-328.23652,-475.55709)">
             {/* Body. */}
             <path fill="var(--color-ink)" d="M 397.47777,559.03334 C 397.47777,559.89584 396.77902,560.59584 395.91527,560.59584 L 329.79902,560.59584 C 328.93652,560.59584 328.23652,559.89584 328.23652,559.03334 L 328.23652,477.11959 C 328.23652,476.25584 328.93652,475.55709 329.79902,475.55709 L 395.91527,475.55709 C 396.77902,475.55709 397.47777,476.25584 397.47777,477.11959 L 397.47777,559.03334" />
             {/* Five counters, knocked out to the page colour so they invert with it. */}

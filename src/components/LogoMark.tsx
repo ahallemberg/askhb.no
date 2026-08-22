@@ -9,7 +9,7 @@ import QFreeMark from './QFreeMark';
  * the alpha channel, so a greyscale filter is safe on them. Q-Free is two-tone
  * -- opaque white counters painted over a red body -- so the same filter erases
  * its counters; it ships as a component that recolours from theme tokens
- * instead. See QFreeMark.
+ * instead, and carries its own weight correction. See QFreeMark.
  *
  * The raster filter is measured, not guessed. Greyscale does not flatten a mark
  * to one ink weight: over their opaque pixels these three carry two to four
@@ -84,8 +84,14 @@ const LogoMark: React.FC<LogoMarkProps> = ({ url, scale = 1, alt = '' }) => {
                 style={{ transform: `scale(${scale})` }}
                 className="flex h-full w-full items-center justify-center"
             >
+                {/*
+                 * No weight correction applied here. A component mark paints from
+                 * the tokens and knows its own ink coverage, so it sets its own
+                 * alpha; a blanket one at this level would be a number tuned for
+                 * one mark silently multiplying every other's. See QFreeMark.
+                 */}
                 {Mark
-                    ? <Mark className="max-h-full max-w-full opacity-80" label={alt} />
+                    ? <Mark className="max-h-full max-w-full" label={alt} />
                     : (
                         <img
                             src={url}
