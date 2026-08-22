@@ -1,5 +1,6 @@
 import { type RoleProps } from '../types/props';
 import { resolveLinks } from '../func/organisations';
+import { splitParagraphs } from '../func/text';
 
 interface RoleBlockProps {
     role: RoleProps;
@@ -24,6 +25,13 @@ const RoleBlock: React.FC<RoleBlockProps> = ({ role, nested = false }) => {
      */
     const skills = role.skills ?? [];
 
+    /*
+     * Split on blank lines, the same way Portfolio renders `about`. These
+     * descriptions are the copy still being rewritten, so the first author to
+     * type a paragraph break would otherwise watch it turn into a space.
+     */
+    const paragraphs = splitParagraphs(role.description);
+
     return (
         <div>
             <h4 className={nested ? 'text-[15px] font-semibold text-ink' : 'font-serif text-lg font-medium text-ink'}>
@@ -35,7 +43,11 @@ const RoleBlock: React.FC<RoleBlockProps> = ({ role, nested = false }) => {
                 <p className="mt-1 text-[11px] uppercase tracking-[0.13em] text-ink-faint">{role.date}</p>
             )}
 
-            <p className="mt-2 leading-relaxed text-ink-muted">{role.description}</p>
+            {paragraphs.map((paragraph, index) => (
+                <p key={index} className={`leading-relaxed text-ink-muted ${index > 0 ? 'mt-3' : 'mt-2'}`}>
+                    {paragraph}
+                </p>
+            ))}
 
             {/*
              * The point of the redesign: the number that sells the work gets a

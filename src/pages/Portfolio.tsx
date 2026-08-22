@@ -13,6 +13,7 @@ import {
     type SocialLinkItemProps
 } from '../types/props';
 import { useAllPortfolioData } from '../hooks/useData';
+import { splitParagraphs } from '../func/text';
 import { R2_PROFILE_PICTURE } from '../constants/app';
 import DarkModeToggle from '../components/DarkModeToggle';
 import { Download } from 'lucide-react';
@@ -36,14 +37,6 @@ import socialLinks from '../config/sociallinks.json';
  * costs nothing to fix here.
  */
 const COLUMN = 'mx-auto w-full max-w-[36rem] px-6';
-
-/*
- * `about` arrives from R2 as one string with a blank line in it. Rendered in a
- * single <p> the break collapses to a space and the two paragraphs run together,
- * which is what the old page did.
- */
-const splitParagraphs = (text?: string): string[] =>
-    text ? text.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean) : [];
 
 const Portfolio: React.FC = () => {
     const { personalInfo, experiences, education, projects, isLoading, isError, error } = useAllPortfolioData();
@@ -176,8 +169,10 @@ const Portfolio: React.FC = () => {
                         {/*
                          * The per-item FadeIn is load-bearing here, not just
                          * animation: EducationItem drops its trailing hairline
-                         * through `[div:last-child>&]`, which asks the question of
-                         * this wrapper. Remove it and every entry keeps its rule.
+                         * with an arbitrary variant that matches only when its
+                         * wrapping div is the last child of this section, so the
+                         * question is asked of this wrapper. Remove it and every
+                         * entry keeps its rule.
                          */}
                         {education.data?.map((edu: EducationItemProps, index: number) => (
                             <FadeIn key={index} delay={index * itemStagger}>
