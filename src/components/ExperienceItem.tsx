@@ -1,12 +1,6 @@
 import FadeIn from "./FadeIn";
-import { type ExperienceItemProps, type PortfolioLink } from "../types/props";
-
-// R2 entries may carry either shape: `links` since multi-link support, or a lone
-// `readMoreUrl` from before it. Normalising here keeps the markup to one path.
-const resolveLinks = (links?: PortfolioLink[], readMoreUrl?: string): PortfolioLink[] => {
-    if (links && links.length > 0) return links;
-    return readMoreUrl ? [{ label: 'Read more', url: readMoreUrl }] : [];
-};
+import { type ExperienceItemProps } from "../types/props";
+import { resolveLinks } from "../func/organisations";
 
 const ExperienceItem: React.FC<ExperienceItemProps> = ({ 
     title, 
