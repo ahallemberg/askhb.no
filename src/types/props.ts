@@ -5,6 +5,15 @@ export interface PersonalInfo {
     title: string;
     about: string;
     cvUrl?: string;
+    /*
+     * Optional, and not what makes the photo reachable: admin.askhb.no
+     * overwrites the bucket's profilepicture.png in place, so the header has an
+     * image whether or not this is set. What it carries is the cache-busting
+     * query a replacement needs -- r2.askhb.no serves images with a 4 hour
+     * max-age, so without a changing URL a new photo stays behind the edge
+     * cache. Absent means the photo predates the field; see R2_PROFILE_PICTURE.
+     */
+    profilePictureUrl?: string;
 }
 
 export interface PortfolioLink {

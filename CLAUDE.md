@@ -59,6 +59,8 @@ The interfaces in `src/types/props.ts` serve double duty: they type component pr
 
 `PersonalInfo.cvUrl` is optional and drives the header's Download CV button: the button renders only when the field is set. admin.askhb.no sets it after uploading a PDF. It is a stored field rather than a fixed `/cv.pdf` constant because the R2 bucket's CORS policy rejects HEAD requests from the site's origin, so the page cannot check whether a CV exists.
 
+`PersonalInfo.profilePictureUrl` is optional and works differently, even though it looks like the same pattern. The header always has a photo: admin.askhb.no overwrites the bucket's `profilepicture.png` in place, so `R2_PROFILE_PICTURE` and the stored URL address the same object. The field exists only to carry a cache-busting query — r2.askhb.no serves images with a 4 hour `max-age`, so a replacement is invisible behind the edge cache until the URL itself changes. An unset field means the photo predates the field, not that there is no photo, so the fallback is load-bearing and must stay.
+
 ### The palette is a shared submodule
 
 `theme/` is a **git submodule** pointing at `https://github.com/ahallemberg/askhb-theme.git`, and it holds the colour tokens for this site *and* for pages.askhb.no. Editing a hex here changes nothing: `src/index.css` no longer declares any colour, only the adapter that lifts each shared token into Tailwind's `--color-*` namespace.
