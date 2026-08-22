@@ -61,14 +61,29 @@ The interfaces in `src/types/props.ts` serve double duty: they type component pr
 
 `PersonalInfo.profilePictureUrl` is optional and works differently, even though it looks like the same pattern. The header always has a photo: admin.askhb.no overwrites the bucket's `profilepicture.png` in place, so `R2_PROFILE_PICTURE` and the stored URL address the same object. The field exists only to carry a cache-busting query — r2.askhb.no serves images with a 4 hour `max-age`, so a replacement is invisible behind the edge cache until the URL itself changes. An unset field means the photo predates the field, not that there is no photo, so the fallback is load-bearing and must stay.
 
+### The palette is a shared submodule
+
+`theme/` is a **git submodule** pointing at `https://github.com/ahallemberg/askhb-theme.git`, and it holds the colour tokens for this site *and* for pages.askhb.no. Editing a hex here changes nothing: `src/index.css` no longer declares any colour, only the adapter that lifts each shared token into Tailwind's `--color-*` namespace.
+
+To change a colour, edit `tokens.css` in the theme repo, run `npm run build` there to regenerate `palette.json`, and merge. That dispatches to both sites, each of which opens its own `Auto-update submodule` PR bumping the pointer — the same two-merge chain pages.askhb.no already uses for its content submodule, and with the same failure mode: **a stale auto-PR here means the palette is live on the other site and not on this one.**
+
+The double indirection in `src/index.css` is load-bearing, not stylistic. Utilities resolve to `var(--color-paper)`, which resolves to `var(--paper)`, which the dark block in `tokens.css` redefines. Declaring the adapter names to match the shared token names instead would put two declarations of one name on `:root`, decided by emission order.
+
+The URL is HTTPS where pages.askhb.no's content submodule is SSH. That is deliberate: the repo is public, so an HTTPS read needs no credential anywhere, and neither Cloudflare Pages nor Actions has to rewrite the URL for the build to resolve it. A failed fetch here is at least loud — `src/index.css` imports out of `theme/`, so the Vite build errors rather than shipping an unstyled site.
+
+Font *stacks* stay here while font *names* live in the theme repo: fontsource self-hosts the variable cut under a suffixed family name, so the name this site asks for is not the one Quartz asks Google Fonts for.
+
 ### Dark mode
 
 Hand-rolled, not Tailwind's built-in `dark:` strategy. `src/index.css` declares the variant CSS-first (Tailwind 4 style):
 
 ```css
 @import "tailwindcss";
+@import "../theme/tokens.css";
 @custom-variant dark (&:where(.dark, .dark *));
 ```
+
+The dark values are in the submodule, under a selector list covering both this site's class convention and Quartz's attribute one. That block must stay after `:root` in `tokens.css`: a class and `:root` carry the same specificity, so source order is the only thing making the override win.
 
 `DarkModeToggle` toggles the `.dark` class on `document.documentElement` and persists the choice to `localStorage['theme']`, falling back to `prefers-color-scheme`. Separately, `App.tsx` adds background classes to `<body>` in an effect. Both matter for full-page theming.
 
