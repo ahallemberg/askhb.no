@@ -202,13 +202,18 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * of the heading, the description, the figure and every skill chip -- is
      * redundant and gone with it.
      *
+     * The hover grouping is scoped to the linked case rather than set on every
+     * card. A card with no url has nothing to open, and lighting its title on
+     * hover would promise a click that does not exist -- which is what the
+     * unconditional version of this line did.
+     *
      * The ring it used to carry is gone from here too, and is drawn by the
      * stretched pseudo-element instead. It still lands outside the card border,
      * on paper rather than on the card's own fill: 8.03:1 (light) / 6.82:1
      * (dark), past the 3:1 in WCAG 1.4.11.
      */
     return (
-        <div className={`group relative ${CARD_CLASS} ${url ? 'transition-colors hover:border-ink-faint' : ''}`}>
+        <div className={`relative ${CARD_CLASS} ${url ? 'group transition-colors hover:border-ink-faint' : ''}`}>
             {body}
         </div>
     );
