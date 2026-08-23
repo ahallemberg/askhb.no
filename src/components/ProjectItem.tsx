@@ -83,13 +83,23 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * the card above no longer clips its overflow: a clipping ancestor would cut
      * the ring off, and only the image ever needed clipping.
      *
-     * The style is restated on the pseudo-element and is not redundant. Removing
-     * the anchor's own ring sets a custom property to none on the anchor, the
-     * pseudo-element inherits it, and the width set here would then resolve
-     * against a style of none -- a ring that is specified and never drawn.
+     * The style is restated on the pseudo-element belt-and-braces, not because it
+     * is required: the custom property behind it is registered as non-inheriting
+     * with an initial value that already draws, so removing the anchor's own ring
+     * does not reach in here. Stated anyway so the ring does not depend on a
+     * registration detail of the CSS framework staying as it is.
+     *
+     * The inset and the radius are what put the ring back where it was before the
+     * card stopped being the anchor. Absolute insets resolve against the padding
+     * box, so without the nudge the ring traces a square-cornered rectangle
+     * inside the border instead of following the card's own rounded edge.
      */
     const STRETCH_CLASS =
-        "after:absolute after:inset-0 after:z-0 after:content-[''] focus-visible:outline-none focus-visible:after:outline-solid focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent";
+        "after:absolute after:-inset-px after:z-0 after:rounded-[3px] after:content-[''] focus-visible:outline-none focus-visible:after:outline-solid focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent";
+
+    const wrapperClass = ['relative', CARD_CLASS, url ? 'group transition-colors hover:border-ink-faint' : '']
+        .filter(Boolean)
+        .join(' ');
 
     const body = (
         <>
@@ -213,7 +223,7 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * (dark), past the 3:1 in WCAG 1.4.11.
      */
     return (
-        <div className={`relative ${CARD_CLASS} ${url ? 'group transition-colors hover:border-ink-faint' : ''}`}>
+        <div className={wrapperClass}>
             {body}
         </div>
     );
