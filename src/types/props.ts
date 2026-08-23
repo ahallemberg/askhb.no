@@ -51,6 +51,12 @@ export interface ProjectItemProps {
     description: string;
     url?: string;
     screenshotUrl?: string;
+    /*
+     * The same shot with the site in dark mode. Optional, and absent is the
+     * ordinary case: a site with no dark mode of its own has nothing to
+     * capture, so the one screenshot serves both themes.
+     */
+    screenshotUrlDark?: string;
     figure?: string;
     figureCaption?: string;
     skills?: string[];
