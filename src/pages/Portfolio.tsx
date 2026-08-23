@@ -166,8 +166,13 @@ const Portfolio: React.FC = () => {
                         <section className="mb-16">
                             <SectionHeading>Projects</SectionHeading>
                             {/* Two columns do not survive 375px -- the cells land
-                                near 160px -- so the second one starts at sm. */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                near 160px -- so the second one starts at sm.
+                                A lone project keeps the single column at every
+                                width: halved, it would sit against the left edge
+                                with the other half empty, which reads as a card
+                                that failed to load rather than as the only one
+                                there is. */}
+                            <div className={`grid grid-cols-1 gap-4 ${projects.data.length > 1 ? 'sm:grid-cols-2' : ''}`}>
                                 {projects.data.map((project: ProjectItemProps, index: number) => (
                                     <FadeIn key={index} delay={index * itemStagger}>
                                         <ProjectItem project={project} />
