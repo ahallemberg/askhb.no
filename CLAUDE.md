@@ -64,7 +64,7 @@ that navigates away from a dialog holding an unsaved draft destroys the draft.
 
 ### Write-ups are a separate Quartz site — do not build them here
 
-Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `obsidian-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
+Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `pages-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
 
 The published slug is the filename verbatim, capitals included: `Computas.md` → `pages.askhb.no/Computas`, while `pages.askhb.no/computas` is a 404.
 
@@ -91,6 +91,12 @@ The interfaces in `src/types/props.ts` serve double duty: they type component pr
 `PersonalInfo.cvUrl` is optional and drives the header's Download CV button: the button renders only when the field is set. admin.askhb.no sets it after uploading a PDF. It is a stored field rather than a fixed `/cv.pdf` constant because the R2 bucket's CORS policy rejects HEAD requests from the site's origin, so the page cannot check whether a CV exists.
 
 `PersonalInfo.profilePictureUrl` is optional and works differently, even though it looks like the same pattern. The header always has a photo: admin.askhb.no overwrites the bucket's `profilepicture.png` in place, so `R2_PROFILE_PICTURE` and the stored URL address the same object. The field exists only to carry a cache-busting query — r2.askhb.no serves images with a 4 hour `max-age`, so a replacement is invisible behind the edge cache until the URL itself changes. An unset field means the photo predates the field, not that there is no photo, so the fallback is load-bearing and must stay.
+
+`ProjectItemProps.screenshotUrlDark` is optional, and absent is the ordinary case rather than a gap: a project whose site has no dark mode has nothing to capture, so its one screenshot serves both themes. `ProjectItem` resolves the pair so that either field alone covers both themes and only a genuine pair triggers a swap.
+
+**The swap is class-based, and it has to be.** The obvious implementation is a `<picture>` whose source switches on a `prefers-color-scheme` media query, and it is wrong here: this site's dark mode is a class on `<html>` written by `DarkModeToggle` and `localStorage`, not the OS preference. A media query follows the OS, so a reader on a light OS who turns the page dark would get the light screenshot on a dark card. The card therefore renders both images and lets the same class-based variant the rest of the page uses decide which one displays — which costs a second fetch on any card carrying a pair, and buys not having to hold the theme in React state beside the pre-paint bootstrap in `index.html`. Two sources of truth for the value that must be right before first paint is the drift worth avoiding.
+
+Note what nothing on this side can check: a dark screenshot is only as real as the site it was captured from. admin.askhb.no forces dark by injecting a class and an attribute, which can only surface a dark mode the site already implements — against a site with none it captures the light page and stores it as the dark one. If a card looks identical in both themes, suspect the capture, not this code.
 
 ### The palette is a shared submodule
 
