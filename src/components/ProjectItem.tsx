@@ -1,4 +1,5 @@
 import { type ProjectItemProps } from '../types/props';
+import RichText from './RichText';
 
 interface ProjectItemComponentProps {
     project: ProjectItemProps;
@@ -11,7 +12,7 @@ interface ProjectItemComponentProps {
  * its own.
  */
 const CARD_CLASS =
-    'flex h-full flex-col overflow-hidden rounded-[3px] border border-rule bg-rule-faint';
+    'flex h-full flex-col rounded-[3px] border border-rule bg-rule-faint';
 
 /*
  * Written once because the light and dark shots have to be laid out identically:
@@ -19,9 +20,14 @@ const CARD_CLASS =
  *
  * Fixed ratio, not the source ratio -- a tall screenshot would otherwise set the
  * card's height and leave a stripe of empty background under the text.
+ *
+ * The top corners are rounded here rather than clipped by the card. The card
+ * cannot clip any more: the stretched link draws its focus ring just outside the
+ * card from a pseudo-element inside it, and a clipping ancestor would cut that
+ * ring off. Inside a 1px border on a 3px box the inner curve is 2px.
  */
 const SCREENSHOT_CLASS =
-    'aspect-[16/10] w-full border-b border-rule object-cover object-top';
+    'aspect-[16/10] w-full rounded-t-[2px] border-b border-rule object-cover object-top';
 
 const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     /*
@@ -77,6 +83,48 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      */
     const showHost = host !== undefined && host.toLowerCase() !== name.toLowerCase();
 
+    /*
+     * Which element carries the card's link. The name when there is one; the
+     * footer line when there is a url but no name yet, so a half-finished entry
+     * is still openable rather than being a card that does nothing. Whichever it
+     * is stretches a pseudo-element across the card, and that -- not the wrapper
+     * -- is the click target, because the description may now hold anchors of its
+     * own and an anchor inside an anchor is not valid HTML.
+     */
+    const url = project.url;
+    const stretched: 'name' | 'footer' | 'none' = !url ? 'none' : name ? 'name' : 'footer';
+
+    /*
+     * Pinned to the inset of the card, which is the nearest positioned ancestor.
+     * It sits at the base of the card's stacking order so the description's own
+     * links can be raised over it -- explicitly, rather than by document order,
+     * because in the footer case this element comes after the description rather
+     * than before it.
+     *
+     * The ring is drawn on this pseudo-element rather than on the anchor's own
+     * box, so focus frames the whole card the way it did when the card was the
+     * anchor, instead of drawing a rectangle around the title. That is also why
+     * the card above no longer clips its overflow: a clipping ancestor would cut
+     * the ring off, and only the image ever needed clipping.
+     *
+     * The style is restated on the pseudo-element belt-and-braces, not because it
+     * is required: the custom property behind it is registered as non-inheriting
+     * with an initial value that already draws, so removing the anchor's own ring
+     * does not reach in here. Stated anyway so the ring does not depend on a
+     * registration detail of the CSS framework staying as it is.
+     *
+     * The inset and the radius are what put the ring back where it was before the
+     * card stopped being the anchor. Absolute insets resolve against the padding
+     * box, so without the nudge the ring traces a square-cornered rectangle
+     * inside the border instead of following the card's own rounded edge.
+     */
+    const STRETCH_CLASS =
+        "after:absolute after:-inset-px after:z-0 after:rounded-[3px] after:content-[''] focus-visible:outline-none focus-visible:after:outline-solid focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-accent";
+
+    const wrapperClass = ['relative', CARD_CLASS, url ? 'group transition-colors hover:border-ink-faint' : '']
+        .filter(Boolean)
+        .join(' ');
+
     const body = (
         <>
             {/*
@@ -120,11 +168,18 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
             <div className="flex flex-1 flex-col p-5">
                 {name && (
                     <h3 className="font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
-                        {name}
+                        {stretched === 'name' && url
+                            ? <a href={url} target="_blank" rel="noreferrer" className={STRETCH_CLASS}>{name}</a>
+                            : name}
                     </h3>
                 )}
 
-                <p className="mt-2 leading-relaxed text-ink-muted">{project.description}</p>
+                {/* The links inside are lifted over the stretched overlay so they
+                    are clickable; the prose around them is not, so the rest of the
+                    card still opens the project. */}
+                <p className="mt-2 leading-relaxed text-ink-muted [&_a]:relative [&_a]:z-10">
+                    <RichText text={project.description} />
+                </p>
 
                 {/*
                  * bg-paper rather than the bg-rule-faint RoleBlock uses: on this
@@ -181,9 +236,11 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
                          * what carries the affordance without colour, since
                          * accent alone would not (WCAG 1.4.1).
                          */}
-                        {project.url && (
+                        {url && (
                             <div className="mt-4 text-[13px] text-accent transition-colors group-hover:text-ink">
-                                {showHost ? host : 'Visit'} <span aria-hidden="true">→</span>
+                                {stretched === 'footer'
+                                    ? <a href={url} target="_blank" rel="noreferrer" className={STRETCH_CLASS}>{showHost ? host : 'Visit'} <span aria-hidden="true">→</span></a>
+                                    : <>{showHost ? host : 'Visit'} <span aria-hidden="true">→</span></>}
                             </div>
                         )}
                     </div>
@@ -192,43 +249,27 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
         </>
     );
 
-    if (!project.url) {
-        return <div className={CARD_CLASS}>{body}</div>;
-    }
-
     /*
-     * aria-label pins the link's accessible name to the project name. Without
-     * it the name is built from everything inside -- heading, description,
-     * figure, caption, every skill -- and a screen reader's link list turns into
-     * a paragraph per card. The visible name is inside the label, so 2.5.3 holds.
+     * Always a div now, never an anchor. The card's accessible name comes from
+     * whichever element took the stretched link, so the aria-label this wrapper
+     * used to carry -- there to stop a screen reader building the link's name out
+     * of the heading, the description, the figure and every skill chip -- is
+     * redundant and gone with it.
      *
-     * Omitted outright, not set to an empty string, when the name is missing: an
-     * empty aria-label leaves the link with no accessible name at all (WCAG
-     * 4.1.2), while omitting it falls back to the card's contents. That is the
-     * verbose reading the label exists to prevent, but a long name beats none.
+     * The hover grouping is scoped to the linked case rather than set on every
+     * card. A card with no url has nothing to open, and lighting its title on
+     * hover would promise a click that does not exist -- which is what the
+     * unconditional version of this line did.
      *
-     * The card holds no second link, so wrapping it is still valid HTML. If one
-     * is ever added, this has to become a stretched link -- the name as the
-     * anchor, with an absolutely positioned pseudo-element pinned to the inset
-     * of a positioned card -- because an anchor inside an anchor is not.
+     * The ring it used to carry is gone from here too, and is drawn by the
+     * stretched pseudo-element instead. It still lands outside the card border,
+     * on paper rather than on the card's own fill: 8.03:1 (light) / 6.82:1
+     * (dark), past the 3:1 in WCAG 1.4.11.
      */
     return (
-        <a
-            href={project.url}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={name || undefined}
-            /*
-             * The offset puts the ring outside the card border, on paper, not
-             * on the card's own rule-faint fill: 8.03:1 (light) / 6.82:1 (dark)
-             * against paper, past the 3:1 in WCAG 1.4.11. Against the fill it
-             * would be 6.91:1 / 5.87:1, so the ring clears either way, but only
-             * the outer measurement is the one that applies.
-             */
-            className={`group ${CARD_CLASS} focus-visible:outline-accent transition-colors hover:border-ink-faint focus-visible:outline-2 focus-visible:outline-offset-2`}
-        >
+        <div className={wrapperClass}>
             {body}
-        </a>
+        </div>
     );
 };
 

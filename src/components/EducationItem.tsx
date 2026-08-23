@@ -1,4 +1,5 @@
 import { type EducationItemProps } from '../types/props';
+import RichText from './RichText';
 
 /*
  * The GPA is one of the stronger signals on the page and arrives as the last of
@@ -14,6 +15,17 @@ import { type EducationItemProps } from '../types/props';
  * does not, and "GPA:" with nothing after it does not either (\S).
  */
 const GPA_LINE = /^GPA:\s*(\S.*?)\s*$/i;
+
+/*
+ * The rows are hand-edited and nothing casts them, so a line can arrive as
+ * something other than a string -- a number written without quotes is the easy
+ * way to do it. React printed those; the rich text parser returns nothing at all
+ * for a non-string, which would silently drop the line while still leaving its
+ * empty paragraph on the page. Coerced here so the entry keeps printing what it
+ * printed before, and so the GPA pattern still sees a string to match against.
+ */
+const asText = (line: unknown): string =>
+    typeof line === 'string' ? line : line === null || line === undefined ? '' : String(line);
 
 /*
  * Only the first match is lifted. The obvious filter() would drop every
@@ -49,7 +61,7 @@ const EducationItem: React.FC<EducationItemProps> = ({
      * bucket is hand-editable. Portfolio gates the whole page on one isError,
      * so a row missing `description` has to close up rather than throw.
      */
-    const { gpa, rest } = partitionDescription(Array.isArray(description) ? description : []);
+    const { gpa, rest } = partitionDescription((Array.isArray(description) ? description : []).map(asText));
 
     // Same ' · ' meta line as OrganisationItem, rather than the old ' | '.
     const meta = [institution, date].filter(Boolean).join(' · ');
@@ -78,7 +90,9 @@ const EducationItem: React.FC<EducationItemProps> = ({
                 )}
 
                 {rest.map((line, index) => (
-                    <p key={index} className="mt-2 leading-relaxed text-ink-muted">{line}</p>
+                    <p key={index} className="mt-2 leading-relaxed text-ink-muted">
+                        <RichText text={line} />
+                    </p>
                 ))}
             </div>
 

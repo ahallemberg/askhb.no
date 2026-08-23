@@ -16,6 +16,7 @@ import { useAllPortfolioData } from '../hooks/useData';
 import { splitParagraphs } from '../func/text';
 import { R2_PROFILE_PICTURE } from '../constants/app';
 import DarkModeToggle from '../components/DarkModeToggle';
+import RichText from '../components/RichText';
 import { Download } from 'lucide-react';
 import socialLinks from '../config/sociallinks.json';
 
@@ -131,7 +132,7 @@ const Portfolio: React.FC = () => {
                         <SectionHeading>About</SectionHeading>
                         {about.map((paragraph, index: number) => (
                             <p key={index} className={`text-ink-muted leading-relaxed ${index > 0 ? 'mt-4' : ''}`}>
-                                {paragraph}
+                                <RichText text={paragraph} />
                             </p>
                         ))}
                     </section>

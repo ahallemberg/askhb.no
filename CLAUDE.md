@@ -31,6 +31,37 @@ The single most important thing to know: **editing this repo does not change the
 
 To change portfolio content, edit the JSON objects in the R2 bucket — not the source. The only content committed here is `src/config/sociallinks.json`.
 
+#### Prose fields carry inline markup
+
+`about`, the role `description`s, project `description`s and the education
+`description` lines are parsed by `src/func/richtext.ts` before rendering. Three
+marks, nothing else: `[label](url)`, `**bold**`, `*italic*`. There is no
+block-level markdown, deliberately — the page is a hand-tuned editorial layout
+and remote JSON must not be able to put a heading or a list into it.
+
+The rules that are easy to trip over:
+
+- **A url needs its scheme.** `[x](pages.askhb.no/Foo)` is refused, because a
+  bare host cannot be told apart from a relative path. Write `https://`.
+- **A refused link renders its whole source verbatim**, brackets and all, rather
+  than collapsing to its label — so `footnote[1] (see below)` survives, and a
+  mistake is visible instead of silently eating the rest of the sentence.
+- Only `http`, `https`, `mailto` and site-relative paths are accepted. Relative
+  paths are checked by resolving them, not by pattern: a browser reads `\` as `/`,
+  so `/\host` is an authority in disguise that a leading-slash test would pass.
+- **A link inside a link label is not parsed.** An anchor inside an anchor is
+  invalid HTML, and React builds it faithfully rather than unnesting it.
+- Emphasis needs tight delimiters, so `2 * 3 * 4` stays arithmetic.
+
+Nothing in that file may throw. `Portfolio` gates the whole page on one
+`isError` and there is no ErrorBoundary, so an exception raised while rendering
+one description blanks every section. Malformed markup renders literally instead.
+
+`admin.askhb.no` holds a copy of the parser and previews with the same rules, so
+`diff -w` between the two copies should show comment blocks and nothing else.
+Its preview renders links as inert spans rather than anchors, because a click
+that navigates away from a dialog holding an unsaved draft destroys the draft.
+
 ### Write-ups are a separate Quartz site — do not build them here
 
 Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `pages-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
