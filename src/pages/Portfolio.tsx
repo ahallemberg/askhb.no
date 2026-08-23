@@ -166,8 +166,21 @@ const Portfolio: React.FC = () => {
                         <section className="mb-16">
                             <SectionHeading>Projects</SectionHeading>
                             {/* Two columns do not survive 375px -- the cells land
-                                near 160px -- so the second one starts at sm. */}
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                near 160px -- so the second one starts at sm.
+
+                                A trailing card with no partner spans both cells
+                                instead of leaving the rest of its row empty --
+                                an odd count, the lone project included, since
+                                one card is both the last and an odd one. Half a
+                                row of nothing reads as a card that failed to
+                                load rather than as the last one there is.
+
+                                Asked for from sm up only: below that the row
+                                holds a single cell, and a child asking to cover
+                                two would have the second one invented for it,
+                                which halves every card on the narrowest screens
+                                the layout has. */}
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2">
                                 {projects.data.map((project: ProjectItemProps, index: number) => (
                                     <FadeIn key={index} delay={index * itemStagger}>
                                         <ProjectItem project={project} />
