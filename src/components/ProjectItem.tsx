@@ -13,6 +13,16 @@ interface ProjectItemComponentProps {
 const CARD_CLASS =
     'flex h-full flex-col overflow-hidden rounded-[3px] border border-rule bg-rule-faint';
 
+/*
+ * Written once because the light and dark shots have to be laid out identically:
+ * if they drift apart the card resizes when the reader flips the toggle.
+ *
+ * Fixed ratio, not the source ratio -- a tall screenshot would otherwise set the
+ * card's height and leave a stripe of empty background under the text.
+ */
+const SCREENSHOT_CLASS =
+    'aspect-[16/10] w-full border-b border-rule object-cover object-top';
+
 const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     /*
      * Optional here, unlike RoleProps.skills. Same defence either way, because
@@ -35,6 +45,15 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * has nothing to match it against.
      */
     const name = typeof project.name === 'string' ? project.name.trim() : '';
+
+    /*
+     * Which shot each theme gets. Either field may be absent, and one on its own
+     * serves both themes rather than leaving the card blank -- the entry is real,
+     * and the same reasoning applies here as to a project saved without a name.
+     */
+    const lightShot = project.screenshotUrl ?? project.screenshotUrlDark;
+    const darkShot = project.screenshotUrlDark ?? project.screenshotUrl;
+    const hasThemedPair = lightShot !== darkShot;
 
     /*
      * A malformed url would throw out of URL and take the page with it, so the
@@ -61,21 +80,41 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     const body = (
         <>
             {/*
-             * Fixed ratio, not the source ratio: without it one tall screenshot
-             * sets the height of its whole grid row and the card beside it is
-             * left with a stripe of empty background under its text.
+             * Two elements, one per theme, rather than one whose src is chosen in
+             * JavaScript. This site's dark mode is a class on <html> written by
+             * the toggle and localStorage, not the OS preference, so a <picture>
+             * switching on a prefers-color-scheme media query would follow the OS
+             * and disagree with the toggle: a reader on a light OS who turns the
+             * page dark would get the light screenshot on a dark card. The dark
+             * variant is the same class-based one the rest of the page uses, so
+             * the pair cannot disagree with the toggle.
+             *
+             * The cost is that a card carrying both fetches both. Choosing in
+             * JavaScript instead would mean holding the theme in React state
+             * beside the pre-paint bootstrap in index.html -- a second source of
+             * truth for the one value that must be right before first paint.
              *
              * alt is empty because the name sits directly beneath it and the
              * link that wraps the card is already named -- alt here would be the
              * third reading of the same string.
              */}
-            {project.screenshotUrl && (
-                <img
-                    src={project.screenshotUrl}
-                    alt=""
-                    loading="lazy"
-                    className="aspect-[16/10] w-full border-b border-rule object-cover object-top"
-                />
+            {lightShot && (
+                <>
+                    <img
+                        src={lightShot}
+                        alt=""
+                        loading="lazy"
+                        className={hasThemedPair ? `${SCREENSHOT_CLASS} dark:hidden` : SCREENSHOT_CLASS}
+                    />
+                    {hasThemedPair && (
+                        <img
+                            src={darkShot}
+                            alt=""
+                            loading="lazy"
+                            className={`${SCREENSHOT_CLASS} hidden dark:block`}
+                        />
+                    )}
+                </>
             )}
 
             <div className="flex flex-1 flex-col p-5">
