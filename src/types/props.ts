@@ -57,6 +57,14 @@ export interface ProjectItemProps {
      * capture, so the one screenshot serves both themes.
      */
     screenshotUrlDark?: string;
+    /*
+     * Which page the screenshot was taken from, when it is not the project's own
+     * landing page. Written by admin.askhb.no and never read here -- declared
+     * because these interfaces describe the bucket's JSON as well as this
+     * component's props, and a field that appears in the file but nowhere in the
+     * type reads as one this site dropped rather than one it never wanted.
+     */
+    screenshotSourceUrl?: string;
     figure?: string;
     figureCaption?: string;
     skills?: string[];
