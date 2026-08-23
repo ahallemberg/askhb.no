@@ -33,7 +33,7 @@ To change portfolio content, edit the JSON objects in the R2 bucket — not the 
 
 ### Write-ups are a separate Quartz site — do not build them here
 
-Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `obsidian-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
+Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `pages-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
 
 The published slug is the filename verbatim, capitals included: `Computas.md` → `pages.askhb.no/Computas`, while `pages.askhb.no/computas` is a 404.
 
