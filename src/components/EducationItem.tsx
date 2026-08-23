@@ -1,4 +1,5 @@
 import { type EducationItemProps } from '../types/props';
+import RichText from './RichText';
 
 /*
  * The GPA is one of the stronger signals on the page and arrives as the last of
@@ -78,7 +79,9 @@ const EducationItem: React.FC<EducationItemProps> = ({
                 )}
 
                 {rest.map((line, index) => (
-                    <p key={index} className="mt-2 leading-relaxed text-ink-muted">{line}</p>
+                    <p key={index} className="mt-2 leading-relaxed text-ink-muted">
+                        <RichText text={line} />
+                    </p>
                 ))}
             </div>
 

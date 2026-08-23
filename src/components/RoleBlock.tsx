@@ -1,6 +1,7 @@
 import { type RoleProps } from '../types/props';
 import { resolveLinks } from '../func/organisations';
 import { splitParagraphs } from '../func/text';
+import RichText from './RichText';
 
 interface RoleBlockProps {
     role: RoleProps;
@@ -45,7 +46,7 @@ const RoleBlock: React.FC<RoleBlockProps> = ({ role, nested = false }) => {
 
             {paragraphs.map((paragraph, index) => (
                 <p key={index} className={`leading-relaxed text-ink-muted ${index > 0 ? 'mt-3' : 'mt-2'}`}>
-                    {paragraph}
+                    <RichText text={paragraph} />
                 </p>
             ))}
 
