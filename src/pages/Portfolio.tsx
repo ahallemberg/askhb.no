@@ -128,7 +128,7 @@ const Portfolio: React.FC = () => {
 
             <main className={`${COLUMN} pb-24`}>
                 <FadeIn delay={aboutDelay}>
-                    <section className="mb-16">
+                    <section className="mb-16 [div:last-child>&]:mb-0">
                         <SectionHeading>About</SectionHeading>
                         {about.map((paragraph, index: number) => (
                             <p key={index} className={`text-ink-muted leading-relaxed ${index > 0 ? 'mt-4' : ''}`}>
@@ -146,7 +146,7 @@ const Portfolio: React.FC = () => {
                  */}
                 {!!experiences.data?.length && (
                     <FadeIn delay={sectionDelay}>
-                        <section className="mb-16">
+                        <section className="mb-16 [div:last-child>&]:mb-0">
                             <SectionHeading>Experience</SectionHeading>
                             {experiences.data.map((organisation: OrganisationProps, index: number) => (
                                 <FadeIn key={index} delay={index * itemStagger}>
@@ -157,6 +157,25 @@ const Portfolio: React.FC = () => {
                     </FadeIn>
                 )}
 
+                <FadeIn delay={sectionDelay}>
+                    <section className="mb-16 [div:last-child>&]:mb-0">
+                        <SectionHeading>Education</SectionHeading>
+                        {/*
+                         * The per-item FadeIn is load-bearing here, not just
+                         * animation: EducationItem drops its trailing hairline
+                         * with an arbitrary variant that matches only when its
+                         * wrapping div is the last child of this section, so the
+                         * question is asked of this wrapper. Remove it and every
+                         * entry keeps its rule.
+                         */}
+                        {education.data?.map((edu: EducationItemProps, index: number) => (
+                            <FadeIn key={index} delay={index * itemStagger}>
+                                <EducationItem {...edu} />
+                            </FadeIn>
+                        ))}
+                    </section>
+                </FadeIn>
+
                 {/*
                  * projects.json does not exist in the bucket yet and useProjects
                  * turns its 404 into [] rather than an error. A ruled heading over
@@ -164,7 +183,7 @@ const Portfolio: React.FC = () => {
                  */}
                 {!!projects.data?.length && (
                     <FadeIn delay={sectionDelay}>
-                        <section className="mb-16">
+                        <section className="mb-16 [div:last-child>&]:mb-0">
                             <SectionHeading>Projects</SectionHeading>
                             {/* Two columns do not survive 375px -- the cells land
                                 near 160px -- so the second one starts at sm.
@@ -191,25 +210,6 @@ const Portfolio: React.FC = () => {
                         </section>
                     </FadeIn>
                 )}
-
-                <FadeIn delay={sectionDelay}>
-                    <section>
-                        <SectionHeading>Education</SectionHeading>
-                        {/*
-                         * The per-item FadeIn is load-bearing here, not just
-                         * animation: EducationItem drops its trailing hairline
-                         * with an arbitrary variant that matches only when its
-                         * wrapping div is the last child of this section, so the
-                         * question is asked of this wrapper. Remove it and every
-                         * entry keeps its rule.
-                         */}
-                        {education.data?.map((edu: EducationItemProps, index: number) => (
-                            <FadeIn key={index} delay={index * itemStagger}>
-                                <EducationItem {...edu} />
-                            </FadeIn>
-                        ))}
-                    </section>
-                </FadeIn>
             </main>
         </div>
     );
