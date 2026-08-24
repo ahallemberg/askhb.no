@@ -115,7 +115,9 @@ Education therefore stays a single column at every width, and `EducationItem` ne
 
 ### `src/pages/Portfolio.tsx`
 
-This is the only file that must change.
+This carries almost all of the work. The only other source file that changes is
+`OrganisationItem.tsx`, whose employer bottom margin gains a desktop variant as part
+of the vertical rhythm below — the measured 3808px depends on it.
 
 1. **Replace the `COLUMN` constant.** It is currently shared by the header and main.
    It becomes a shell class applied once to a wrapper that contains both, carrying the
