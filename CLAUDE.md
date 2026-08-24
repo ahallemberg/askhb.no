@@ -84,6 +84,47 @@ Pushing to `main` in the content repo fires `.github/workflows/notify-parent.yml
 
 `fetchJsonData` casts the response with no runtime validation, so a shape mismatch between R2 and the TypeScript types surfaces as a render-time error, not a fetch error.
 
+### The desktop layout is a rail, and the pinning is structural
+
+`Portfolio.tsx` renders one shell element that is the reading column below the
+`lg` breakpoint and a two-track grid at and above it: a 16rem identity rail
+carrying the photo, name, title, social row, dark-mode toggle and CV button,
+and a 552px measure carrying everything else.
+
+**The rail is pinned by a wrapper inside its grid cell, not by the cell.** A
+grid cell stretches to the height of its row, which is exactly the range the
+pinned block needs to travel over; pinning the cell itself pins something
+already as tall as that range, so it never moves. Telling the grid to align
+its cells to the start breaks it the same way, for the same reason. Anything
+that gives an ancestor a non-visible overflow, a transform, a filter or a
+perspective also breaks it, silently.
+
+The measure widens from 528px to 552px at that breakpoint — about 66 to about
+69 characters. Both sit inside the 65-75 a reading measure wants, which is
+the constraint the long comment above the shell constant exists to defend. A
+mockup at 632px (~79 characters) was rejected for breaking it.
+
+The dark-mode toggle is anchored two different ways. Below the breakpoint it
+is out of the flow at the column's top-right, which is also what keeps the
+social icons centred — nothing in flow shares their row. At and above it, it
+returns to the flow as the last child of that row.
+
+**What it actually saves: 4381px to 4008px at a 1280px viewport, about 8.5%.**
+Design mockups predicted 13%; the built page falls short because they drew the
+typefaces from Google Fonts while the site self-hosts them, and the slightly
+different metrics add line wraps across seven role descriptions. Experience
+alone is 2733px of the 4008, so the page's length is mostly a measure of how
+much the bucket is serving. The rail is worth having for the permanently
+reachable CV button and for using the empty desktop margin — it is not, on its
+own, a large scroll cut.
+
+Two compaction ideas were measured and rejected rather than assumed. Education
+across two columns comes out **72px taller**, because a grid row is as tall as
+its tallest entry and the three entries are very unequal. And the rail was the
+least compact of the three layouts mocked up: against it, an editorial gutter
+saved another 7 points and a two-column split another 18. If the page's length
+is still the complaint, that gutter is the next lever, not more spacing tweaks.
+
 ### Types are the contract with R2
 
 The interfaces in `src/types/props.ts` serve double duty: they type component props *and* describe the expected shape of the remote JSON. Changing `ExperienceItemProps` or `EducationItemProps` means the R2 JSON must change to match, and vice versa.
@@ -137,6 +178,15 @@ Two routes: `/` → `Portfolio`, and `*` → `NotFound`. Keep it that way — ne
 **Tailwind 4 scans comments, so a class name written in one is compiled into the bundle.** Mentioning the class you just replaced, or naming a selector to explain it, silently ships a dead rule — and if the name is an arbitrary variant, a rule containing an invalid declaration. This happened three times during the editorial redesign, once one commit after it was first written down. Describe classes in prose rather than spelling them, and check the emitted CSS if unsure.
 
 The reverse also bites: some utility names are ordinary English (`ring`, `filter`, `invert`, `block`, `inline`, `static`, `visible`), so prose about a "greyscale filter" or a "navy ring" emits those utilities. That is a few hundred harmless bytes and is not worth contorting the prose to avoid. Suppressing them with `@source not inline(...)` would silently break any genuine future use of the same class, so don't.
+
+**The same hazard applies to tracked prose, not just code comments.** Tailwind
+walks every file git does not ignore, so a design note or plan under `docs/`
+that quotes markup compiles that markup's class names into the bundle. This was
+caught shipping a rule for a class the code no longer contains, kept alive only
+by a plan quoting the superseded version. `src/index.css` therefore excludes
+that directory from the scan by path. Note the difference from the class-level
+exclusion warned about above: excluding a directory cannot break a future
+genuine use, because nothing in it is ever rendered — excluding a *name* can.
 
 **The page background is painted by full-viewport divs, not `body`.** `Portfolio.tsx` and `NotFound.tsx` each render a `min-h-screen` root div, so `body`'s own background only shows in the overscroll gutter. Retheming the page means changing those divs; changing `body` alone looks like it worked and doesn't.
 
