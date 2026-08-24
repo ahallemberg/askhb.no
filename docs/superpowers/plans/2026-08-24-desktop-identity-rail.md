@@ -541,13 +541,36 @@ is out of the flow at the column's top-right, which is also what keeps the
 social icons centred — nothing in flow shares their row. At and above it, it
 returns to the flow as the last child of that row.
 
+**What it actually saves: 4381px to 4008px at a 1280px viewport, about 8.5%.**
+Design mockups predicted 13%; the built page falls short because they drew the
+typefaces from Google Fonts while the site self-hosts them, and the slightly
+different metrics add line wraps across seven role descriptions. Experience
+alone is 2733px of the 4008, so the page's length is mostly a measure of how
+much the bucket is serving. The rail is worth having for the permanently
+reachable CV button and for using the empty desktop margin — it is not, on its
+own, a large scroll cut.
+
 Two compaction ideas were measured and rejected rather than assumed. Education
 across two columns comes out **72px taller**, because a grid row is as tall as
-its tallest entry and the three entries are very unequal. And the rail itself
-is the least compact of the three layouts considered — it saves 13% of page
-height where an editorial-gutter treatment saved 20% and a two-column split
-saved 31%. It was chosen for the permanently reachable CV button and the
-single-column reading, not for the biggest scroll cut.
+its tallest entry and the three entries are very unequal. And the rail was the
+least compact of the three layouts mocked up: against it, an editorial gutter
+saved another 7 points and a two-column split another 18. If the page's length
+is still the complaint, that gutter is the next lever, not more spacing tweaks.
+```
+
+- [ ] **Step 1b: Record the new source-scanning hazard in Gotchas**
+
+This branch added tracked markdown under `docs/`, and Tailwind scans it. Add the following to the **Gotchas** section of `CLAUDE.md`, immediately after the existing paragraph about Tailwind scanning comments:
+
+```markdown
+**The same hazard applies to tracked prose, not just code comments.** Tailwind
+walks every file git does not ignore, so a design note or plan under `docs/`
+that quotes markup compiles that markup's class names into the bundle. This was
+caught shipping a rule for a class the code no longer contains, kept alive only
+by a plan quoting the superseded version. `src/index.css` therefore excludes
+that directory from the scan by path. Note the difference from the class-level
+exclusion warned about above: excluding a directory cannot break a future
+genuine use, because nothing in it is ever rendered — excluding a *name* can.
 ```
 
 - [ ] **Step 2: Verify the symlink still resolves**
