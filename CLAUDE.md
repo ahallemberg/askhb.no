@@ -66,7 +66,7 @@ that navigates away from a dialog holding an unsaved draft destroys the draft.
 
 Long-form pages (internship write-ups, project notes) are **not** React pages in this repo. They are markdown notes in the `pages-content` repo (`~/repos/personal/pages-content`), rendered by [Quartz](https://quartz.jzhao.xyz/) from `~/repos/personal/pages.askhb.no`, which pulls that repo in as its `content` submodule, and served at `pages.askhb.no/<Filename>`.
 
-The published slug is the filename verbatim, capitals included: `Computas.md` → `pages.askhb.no/Computas`, while `pages.askhb.no/computas` is a 404.
+The published slug keeps the filename's capitals: `Computas.md` → `pages.askhb.no/Computas`, while `pages.askhb.no/computas` is a 404. It is not the filename verbatim, though — Quartz rewrites whitespace in each path segment to a hyphen, so `Ascend NTNU.md` publishes at `pages.askhb.no/Ascend-NTNU` and the percent-encoded `/Ascend%20NTNU` is a 404. That matters here because a `readMoreUrl` is written by hand: derive it from the published slug, not from the note's title. The full rule is in the Quartz repo's own CLAUDE.md.
 
 To add one:
 
