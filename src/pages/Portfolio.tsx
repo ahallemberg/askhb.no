@@ -176,7 +176,7 @@ const Portfolio: React.FC = () => {
 
                 <main className="pb-24 lg:pb-20">
                     <FadeIn delay={aboutDelay}>
-                        <section className="mb-16 [div:last-child>&]:mb-0">
+                        <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
                             <SectionHeading>About</SectionHeading>
                             {about.map((paragraph, index: number) => (
                                 <p key={index} className={`text-ink-muted leading-relaxed ${index > 0 ? 'mt-4' : ''}`}>
@@ -194,7 +194,7 @@ const Portfolio: React.FC = () => {
                      */}
                     {!!experiences.data?.length && (
                         <FadeIn delay={sectionDelay}>
-                            <section className="mb-16 [div:last-child>&]:mb-0">
+                            <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
                                 <SectionHeading>Experience</SectionHeading>
                                 {experiences.data.map((organisation: OrganisationProps, index: number) => (
                                     <FadeIn key={index} delay={index * itemStagger}>
@@ -206,7 +206,7 @@ const Portfolio: React.FC = () => {
                     )}
 
                     <FadeIn delay={sectionDelay}>
-                        <section className="mb-16 [div:last-child>&]:mb-0">
+                        <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
                             <SectionHeading>Education</SectionHeading>
                             {/*
                              * The per-item FadeIn is load-bearing here, not just
@@ -231,7 +231,7 @@ const Portfolio: React.FC = () => {
                      */}
                     {!!projects.data?.length && (
                         <FadeIn delay={sectionDelay}>
-                            <section className="mb-16 [div:last-child>&]:mb-0">
+                            <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
                                 <SectionHeading>Projects</SectionHeading>
                                 {/* Two columns do not survive 375px -- the cells land
                                     near 160px -- so the second one starts at sm.
