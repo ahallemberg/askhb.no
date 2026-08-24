@@ -11,23 +11,60 @@ interface ProjectItemComponentProps {
  * border is the second cue rather than decoration -- neither carries the card on
  * its own.
  */
+/*
+ * The card is also the query container for its own contents, and past 28rem of
+ * its width they set the shot beside the text rather than above it. The card's
+ * width and not the viewport's, because the same card is ~256px in a shared row
+ * and ~528px when it spans one alone -- a viewport query cannot tell those two
+ * apart, and it is the wide one that needs the other layout.
+ *
+ * Stacked, the shot and the text add up: a spanning card ran past 500px tall for
+ * a one-line description, half of it screenshot. Set side by side the card is as
+ * tall as the taller of the two, which is the text.
+ */
 const CARD_CLASS =
-    'flex h-full flex-col rounded-[3px] border border-rule bg-rule-faint';
+    '@container block h-full rounded-[3px] border border-rule bg-rule-faint';
 
 /*
- * Written once because the light and dark shots have to be laid out identically:
- * if they drift apart the card resizes when the reader flips the toggle.
+ * The direction lives on this inner element rather than on the card, because a
+ * container query asks about an ancestor: the card that declares itself the
+ * container is the one element the query cannot answer for. Written on the card
+ * it silently never matches, and the shot -- which does read the card correctly
+ * -- takes its side-by-side width while the card is still stacking, which leaves
+ * it no height to fill.
+ */
+const LAYOUT_CLASS = 'flex h-full flex-col @md:flex-row';
+
+/*
+ * The ratio is the frame's and the shots are pinned to its inset, which is what
+ * lets the frame drop the ratio when it stands beside the text: there it takes
+ * its height from the card instead, and the shot crops to whatever that height
+ * turns out to be rather than leaving a stripe of empty card beneath it.
  *
- * Fixed ratio, not the source ratio -- a tall screenshot would otherwise set the
- * card's height and leave a stripe of empty background under the text.
+ * Stacked, the fixed ratio still earns its keep for the reason it always did -- a
+ * tall screenshot would otherwise set the card's height and leave that same
+ * stripe under the text. Fixed, so the pair cannot disagree about size either:
+ * shots that differed would resize the card when the reader flips the toggle.
  *
- * The top corners are rounded here rather than clipped by the card. The card
- * cannot clip any more: the stretched link draws its focus ring just outside the
- * card from a pseudo-element inside it, and a clipping ancestor would cut that
- * ring off. Inside a 1px border on a 3px box the inner curve is 2px.
+ * The frame keeps its hairline against the text on whichever side the layout
+ * puts it -- under the shot stacked, beside it otherwise -- and rounds the outer
+ * corners it meets there. It rounds and clips them itself because the card no
+ * longer can: the stretched link draws its focus ring just outside the card from
+ * a pseudo-element inside it, so an ancestor that clipped would cut that ring
+ * off. Inside a 1px border on a 3px box the inner curve is 2px.
+ */
+const SHOT_FRAME_CLASS =
+    'relative aspect-[16/10] w-full overflow-hidden rounded-t-[2px] border-b border-rule @md:aspect-auto @md:w-[45%] @md:shrink-0 @md:rounded-tr-none @md:rounded-bl-[2px] @md:border-r @md:border-b-0';
+
+/*
+ * Beside the text the frame is narrower than the shot's own proportions, so the
+ * crop takes its width from both edges and the site's own logo is the first
+ * thing to go. Anchored to the top left there instead, which is where a page
+ * keeps the marks that identify it. Stacked the frame is wider than it is tall,
+ * nothing is lost sideways, and the top edge is the only one that matters.
  */
 const SCREENSHOT_CLASS =
-    'aspect-[16/10] w-full rounded-t-[2px] border-b border-rule object-cover object-top';
+    'absolute inset-0 h-full w-full object-cover object-top @md:object-left-top';
 
 const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     /*
@@ -126,7 +163,7 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
         .join(' ');
 
     const body = (
-        <>
+        <div className={LAYOUT_CLASS}>
             {/*
              * Two elements, one per theme, rather than one whose src is chosen in
              * JavaScript. This site's dark mode is a class on <html> written by
@@ -147,7 +184,7 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
              * third reading of the same string.
              */}
             {lightShot && (
-                <>
+                <div className={SHOT_FRAME_CLASS}>
                     <img
                         src={lightShot}
                         alt=""
@@ -162,10 +199,16 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
                             className={`${SCREENSHOT_CLASS} hidden dark:block`}
                         />
                     )}
-                </>
+                </div>
             )}
 
-            <div className="flex flex-1 flex-col p-5">
+            {/*
+             * min-w-0 because a text cell beside the shot is sized from its own
+             * content by default, and a long unbroken word -- a host name, a
+             * skill written as one -- would push the cell past its share and
+             * squeeze the shot rather than wrapping.
+             */}
+            <div className="flex min-w-0 flex-1 flex-col p-5">
                 {name && (
                     <h3 className="font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
                         {stretched === 'name' && url
@@ -246,7 +289,7 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 
     /*
