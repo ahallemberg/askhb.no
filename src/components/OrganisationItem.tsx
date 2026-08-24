@@ -38,7 +38,7 @@ const OrganisationItem: React.FC<OrganisationItemProps> = ({ organisation }) => 
     ].filter(Boolean).join(' · ');
 
     return (
-        <article className="mb-10">
+        <article className="mb-10 lg:mb-8">
             {/* Name and meta group beside the mark, so both align to the name when
                 a logo exists and sit flush left when LogoMark renders null. */}
             <header className="flex items-center gap-3">
