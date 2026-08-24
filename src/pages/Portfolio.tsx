@@ -88,13 +88,7 @@ const Portfolio: React.FC = () => {
                 <div>
                     <div className="lg:sticky lg:top-12">
                         <FadeIn delay={headerDelay}>
-                            <header className="relative pt-8 pb-14 text-center lg:pt-0 lg:pb-0">
-                                {/* Pinned to the column's right edge, not the viewport's, so it
-                                    lines up with the rules underneath it. */}
-                                <div className="absolute top-6 right-4">
-                                    <DarkModeToggle />
-                                </div>
-
+                            <header className="relative pt-8 pb-14 text-center lg:pt-0 lg:pb-0 lg:text-left">
                                 {/*
                                  * The stored URL when there is one, the bucket's fixed key
                                  * otherwise -- the two name the same object, and the stored
@@ -105,16 +99,37 @@ const Portfolio: React.FC = () => {
                                 <img
                                     src={personalInfo.data?.profilePictureUrl || R2_PROFILE_PICTURE}
                                     alt="Ask Hallem-Berg"
-                                    className="w-26 h-26 md:w-28 md:h-28 mx-auto mb-5"
+                                    className="w-26 h-26 md:w-28 md:h-28 mx-auto mb-5 lg:mx-0 lg:h-24 lg:w-24"
                                 />
 
-                                <h1 className="font-serif text-4xl font-medium tracking-tight text-ink">{personalInfo.data?.name}</h1>
-                                <p className="mt-2 text-lg text-ink-faint">{personalInfo.data?.title}</p>
+                                <h1 className="font-serif text-4xl font-medium tracking-tight text-ink lg:text-3xl">{personalInfo.data?.name}</h1>
+                                <p className="mt-2 text-lg text-ink-faint lg:text-base">{personalInfo.data?.title}</p>
 
-                                <div className="mt-5 flex justify-center">
-                                    {socialLinks.map((link, index: number) => (
-                                        <SocialLink key={index} {...link as SocialLinkItemProps} />
-                                    ))}
+                                <div className="mt-5 flex justify-center lg:mt-6 lg:items-center lg:justify-between">
+                                    <div className="flex lg:-ml-2">
+                                        {socialLinks.map((link, index: number) => (
+                                            <SocialLink key={index} {...link as SocialLinkItemProps} />
+                                        ))}
+                                    </div>
+
+                                    {/*
+                                     * Below the desktop breakpoint this is taken
+                                     * out of the flow, which is what keeps the
+                                     * links beside it centred -- nothing in flow
+                                     * shares their row. Its horizontal offset is
+                                     * negative because the shell now owns the
+                                     * padding this header used to carry: the
+                                     * header's box is inset by that padding, and
+                                     * pushing back out by a third of it lands the
+                                     * control on the column's edge, which is
+                                     * where it sat before the rail existed. From
+                                     * the breakpoint up it returns to the flow
+                                     * and the row pushes it to the rail's far
+                                     * edge.
+                                     */}
+                                    <div className="absolute top-6 -right-2 lg:static">
+                                        <DarkModeToggle />
+                                    </div>
                                 </div>
 
                                 {/*
