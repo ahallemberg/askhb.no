@@ -106,12 +106,6 @@ const Portfolio: React.FC = () => {
                                 <p className="mt-2 text-lg text-ink-faint lg:text-base">{personalInfo.data?.title}</p>
 
                                 <div className="mt-5 flex justify-center lg:mt-6 lg:items-center lg:justify-between">
-                                    <div className="flex lg:-ml-2">
-                                        {socialLinks.map((link, index: number) => (
-                                            <SocialLink key={index} {...link as SocialLinkItemProps} />
-                                        ))}
-                                    </div>
-
                                     {/*
                                      * Below the desktop breakpoint this is taken
                                      * out of the flow, which is what keeps the
@@ -126,9 +120,27 @@ const Portfolio: React.FC = () => {
                                      * the breakpoint up it returns to the flow
                                      * and the row pushes it to the rail's far
                                      * edge.
+                                     *
+                                     * It is deliberately written before the links
+                                     * and reordered past them from the breakpoint
+                                     * up, so do not "tidy" it back below them.
+                                     * Source order is what a keyboard and a screen
+                                     * reader follow, and out of the flow this sits
+                                     * at the top of the header, visually above the
+                                     * links -- reaching it after them would be a
+                                     * focus order that contradicts the page. Only
+                                     * the desktop row, where it really is the last
+                                     * thing in the line, reorders it, and that
+                                     * reordering is visual only.
                                      */}
-                                    <div className="absolute top-6 -right-2 lg:static">
+                                    <div className="absolute top-6 -right-2 lg:static lg:order-last">
                                         <DarkModeToggle />
+                                    </div>
+
+                                    <div className="flex lg:-ml-2">
+                                        {socialLinks.map((link, index: number) => (
+                                            <SocialLink key={index} {...link as SocialLinkItemProps} />
+                                        ))}
                                     </div>
                                 </div>
 
