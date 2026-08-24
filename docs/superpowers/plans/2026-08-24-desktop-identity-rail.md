@@ -341,21 +341,28 @@ Then replace the social links row with:
 
                                     {/*
                                      * Below the desktop breakpoint this is taken
-                                     * out of the flow and pinned to the column's
-                                     * right edge, so it lines up with the rules
-                                     * underneath it and the links beside it stay
-                                     * centred -- nothing in flow shares their
-                                     * row. From the breakpoint up it returns to
-                                     * the flow and the row pushes it to the
-                                     * rail's far edge.
+                                     * out of the flow, which is what keeps the
+                                     * links beside it centred -- nothing in flow
+                                     * shares their row. Its horizontal offset is
+                                     * negative because the shell now owns the
+                                     * padding this header used to carry: the
+                                     * header's box is inset by that padding, and
+                                     * pushing back out by a third of it lands the
+                                     * control on the column's edge, which is
+                                     * where it sat before the rail existed. From
+                                     * the breakpoint up it returns to the flow
+                                     * and the row pushes it to the rail's far
+                                     * edge.
                                      */}
-                                    <div className="absolute top-6 right-4 lg:static">
+                                    <div className="absolute top-6 -right-2 lg:static">
                                         <DarkModeToggle />
                                     </div>
                                 </div>
 ```
 
 The negative left margin on the links wrapper cancels the horizontal margin `SocialLink` puts on each anchor, so the first icon's ink lines up with the name above it rather than sitting 8px inside it. It does nothing at mobile, where the row is centred.
+
+**Why the toggle's offset is negative, and why this step must not be skipped.** Task 2 moved the horizontal padding off the header and onto the shell. The toggle is absolutely positioned against the header, so its containing block shrank by that padding on each side and the control moved 24px left — at *every* width below `lg`, which breaks the branch's rule that mobile is unchanged. Task 2's reviewer confirmed the shift is a constant 24px, so a single class carries it back: the old inset of 16px inward becomes 8px outward. Get this wrong and every phone visitor sees the theme control sitting inside the text column instead of on its edge.
 
 - [ ] **Step 5: Verify the build and lint pass**
 
@@ -372,6 +379,28 @@ Run `npm run dev` and check, in this order:
 1. At 1440px wide — photo, name, title and social row all flush to the rail's left edge; the toggle at the right end of the social row; the Download CV button below.
 2. At 390px wide — the toggle back in the top-right corner of the page, the social icons still centred under the title, nothing overlapping.
 3. Click the toggle at both widths and confirm the whole page, rail included, switches theme.
+
+- [ ] **Step 6b: Prove mobile is back to the pre-branch baseline (hard gate)**
+
+This step exists because Task 2 knowingly left a 24px regression here. A visual "looks right" is not enough — diff it against the baseline captured before the branch touched anything.
+
+The baseline is `t2-before-390.png` in the session scratchpad, captured at commit `4f1c053`. Capture the current page at the same width and compare:
+
+```bash
+SP=/private/tmp/claude-501/-Users-ahallemberg-repos-personal-askhb-no/257ecc02-d080-44f0-93df-1aaad8397135/scratchpad
+python3 "$SP/shot_cdp.py" 390 "$SP/t3-after-390.png" light
+python3 - <<'PY'
+from PIL import Image, ImageChops
+import os
+sp = os.environ.get("SP") or "/private/tmp/claude-501/-Users-ahallemberg-repos-personal-askhb-no/257ecc02-d080-44f0-93df-1aaad8397135/scratchpad"
+a = Image.open(f"{sp}/t2-before-390.png").convert("RGB")
+b = Image.open(f"{sp}/t3-after-390.png").convert("RGB")
+print("sizes", a.size, b.size)
+print("diff bbox:", ImageChops.difference(a, b).getbbox())
+PY
+```
+
+Expected: identical sizes, and `diff bbox: None`. A bbox around (320, 34, 364, 54) means the toggle is still displaced and the offset class is wrong or missing. Do not commit this task until the bbox is `None`.
 
 - [ ] **Step 7: Commit**
 
