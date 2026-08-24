@@ -21,6 +21,16 @@ interface ProjectItemComponentProps {
  * Stacked, the shot and the text add up: a spanning card ran past 500px tall for
  * a one-line description, half of it screenshot. Set side by side the card is as
  * tall as the taller of the two, which is the text.
+ *
+ * The width alone is not the whole condition, though, and reading it as if it
+ * were made the layout flip twice on the way to being narrower. Below the
+ * breakpoint where the grid drops to one column every card is the full measure,
+ * so a wide card there is not one spanning a row -- it is the only column there
+ * is. Width alone therefore set the shot beside the text across the ~140px band
+ * under that breakpoint, for the very cards that had it above them one pixel
+ * wider, and above them again 140px further down. So the side-by-side rule asks
+ * for both: the card past 28rem, and the grid still in the mode where being that
+ * wide means spanning rather than merely being alone.
  */
 const CARD_CLASS =
     '@container block h-full rounded-[3px] border border-rule bg-rule-faint';
@@ -33,7 +43,7 @@ const CARD_CLASS =
  * -- takes its side-by-side width while the card is still stacking, which leaves
  * it no height to fill.
  */
-const LAYOUT_CLASS = 'flex h-full flex-col @md:flex-row';
+const LAYOUT_CLASS = 'flex h-full flex-col sm:@md:flex-row';
 
 /*
  * The ratio is the frame's and the shots are pinned to its inset, which is what
@@ -54,7 +64,7 @@ const LAYOUT_CLASS = 'flex h-full flex-col @md:flex-row';
  * off. Inside a 1px border on a 3px box the inner curve is 2px.
  */
 const SHOT_FRAME_CLASS =
-    'relative aspect-[16/10] w-full overflow-hidden rounded-t-[2px] border-b border-rule @md:aspect-auto @md:w-[45%] @md:shrink-0 @md:rounded-tr-none @md:rounded-bl-[2px] @md:border-r @md:border-b-0';
+    'relative aspect-[16/10] w-full overflow-hidden rounded-t-[2px] border-b border-rule sm:@md:aspect-auto sm:@md:w-[45%] sm:@md:shrink-0 sm:@md:rounded-tr-none sm:@md:rounded-bl-[2px] sm:@md:border-r sm:@md:border-b-0';
 
 /*
  * Beside the text the frame is narrower than the shot's own proportions, so the
@@ -64,7 +74,7 @@ const SHOT_FRAME_CLASS =
  * nothing is lost sideways, and the top edge is the only one that matters.
  */
 const SCREENSHOT_CLASS =
-    'absolute inset-0 h-full w-full object-cover object-top @md:object-left-top';
+    'absolute inset-0 h-full w-full object-cover object-top sm:@md:object-left-top';
 
 const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
     /*
