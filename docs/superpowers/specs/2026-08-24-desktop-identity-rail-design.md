@@ -19,6 +19,31 @@ the page runs several screens long, and the reader pays for it twice:
 
 Mobile is not part of the problem and must not change.
 
+## Measured outcome
+
+Full page height at a 1280px viewport, measured in headless Chrome against the live
+bucket content, not estimated:
+
+| Layout | Height | Screens at 820px | vs. today |
+|---|---:|---:|---:|
+| Today | 4381px | 5.3 | — |
+| **A · identity rail (this spec)** | **3808px** | **4.6** | **−13%** |
+| A with two-up Education | 3880px | 4.7 | −11% |
+| B · editorial gutter | 3510px | 4.3 | −20% |
+| C · split columns | 3022px | 3.7 | −31% |
+
+Two things follow, and both should be read before building.
+
+**A is the least compact of the three options.** It was chosen for the always-visible
+CV button and for keeping the single-column editorial reading, and it delivers those.
+But if raw scroll reduction is the priority, B and C beat it — B by another 298px, C by
+another 786px. A hybrid is available as a later change: the rail from A plus the
+employer gutter from B, at a wider shell and an `xl` tier, should land near −24%. It is
+deliberately not in this spec.
+
+**Two-up Education is 72px taller, not shorter** — the assumption it was worth doing
+is measurably false. See below.
+
 ## Solution
 
 At the `lg` breakpoint and above, the header stops being a band across the top and
@@ -71,14 +96,14 @@ one: a recruiter can act on it at any scroll depth instead of scrolling back to 
 ### Rejected: two-up Education
 
 The original mockup folded the three education entries into a two-column grid. It was
-measured rather than assumed, and it **makes the page taller, not shorter**. Two
-reasons compound:
+measured rather than assumed, and it **makes the page 72px taller, not shorter**
+(3880px against 3808px). Two reasons compound:
 
 - A grid row is as tall as its tallest entry, and the three entries are very unequal —
   ETH is one line of description, Verdal is an eight-course elective list.
 - At 258px per cell that elective list wraps over several extra lines.
 
-The live measurement is shown in the artifact on tab A. Dropping it also removes two
+The artifact re-runs this measurement live on tab A. Dropping it also removes two
 pieces of incidental complexity that would otherwise have been required: a second
 hairline-suppression selector, and a `lg:`-scoped reversal of the GPA rail (which at
 258px would have left the degree column about 82px wide).
