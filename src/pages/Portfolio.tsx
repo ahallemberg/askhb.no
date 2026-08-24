@@ -103,7 +103,20 @@ const Portfolio: React.FC = () => {
                                 />
 
                                 <h1 className="font-serif text-4xl font-medium tracking-tight text-ink lg:text-3xl">{personalInfo.data?.name}</h1>
-                                <p className="mt-2 text-lg text-ink-faint lg:text-base">{personalInfo.data?.title}</p>
+                                {/*
+                                 * Balanced in the rail only, where the track is
+                                 * narrower than this line runs. Left alone the
+                                 * break falls one word from the end and splits
+                                 * the field of study across two lines, which
+                                 * reads as a mistake rather than as a wrap.
+                                 * Evening the two lines keeps the phrase whole.
+                                 *
+                                 * Not fixed by shrinking the type until it fits
+                                 * on one line: this string comes from the bucket
+                                 * and is edited there, so the next one is a
+                                 * different length and the fix has to survive it.
+                                 */}
+                                <p className="mt-2 text-lg text-ink-faint lg:text-base lg:text-balance">{personalInfo.data?.title}</p>
 
                                 <div className="mt-5 flex justify-center lg:mt-6 lg:items-center lg:justify-between">
                                     {/*
