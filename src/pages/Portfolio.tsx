@@ -205,24 +205,34 @@ const Portfolio: React.FC = () => {
                         </FadeIn>
                     )}
 
-                    <FadeIn delay={sectionDelay}>
-                        <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
-                            <SectionHeading>Education</SectionHeading>
-                            {/*
-                             * The per-item FadeIn is load-bearing here, not just
-                             * animation: EducationItem drops its trailing hairline
-                             * with an arbitrary variant that matches only when its
-                             * wrapping div is the last child of this section, so the
-                             * question is asked of this wrapper. Remove it and every
-                             * entry keeps its rule.
-                             */}
-                            {education.data?.map((edu: EducationItemProps, index: number) => (
-                                <FadeIn key={index} delay={index * itemStagger}>
-                                    <EducationItem {...edu} />
-                                </FadeIn>
-                            ))}
-                        </section>
-                    </FadeIn>
+                    {/*
+                     * Guarded like the two around it, but against a different way of
+                     * arriving empty: a missing education.json throws in fetchJsonData
+                     * and takes the whole page to the error state long before this, so
+                     * what reaches here is a 200 carrying no entries -- every one of
+                     * them deleted through admin.askhb.no. A ruled heading over nothing
+                     * reads as breakage either way.
+                     */}
+                    {!!education.data?.length && (
+                        <FadeIn delay={sectionDelay}>
+                            <section className="mb-16 lg:mb-13 [div:last-child>&]:mb-0">
+                                <SectionHeading>Education</SectionHeading>
+                                {/*
+                                 * The per-item FadeIn is load-bearing here, not just
+                                 * animation: EducationItem drops its trailing hairline
+                                 * with an arbitrary variant that matches only when its
+                                 * wrapping div is the last child of this section, so the
+                                 * question is asked of this wrapper. Remove it and every
+                                 * entry keeps its rule.
+                                 */}
+                                {education.data.map((edu: EducationItemProps, index: number) => (
+                                    <FadeIn key={index} delay={index * itemStagger}>
+                                        <EducationItem {...edu} />
+                                    </FadeIn>
+                                ))}
+                            </section>
+                        </FadeIn>
+                    )}
 
                     {/*
                      * projects.json does not exist in the bucket yet and useProjects
