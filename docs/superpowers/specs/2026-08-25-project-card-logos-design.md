@@ -64,6 +64,17 @@ the anchor, not inside it: it is decorative and carries an empty alt, while the
 heading may be the element holding the card's stretched link, and an image
 inside that anchor would add a second reading of a name the link already has.
 
+**A project saved with a logo but no name yet shows no mark**, because the row
+sits inside the existing guard that drops the heading in that case. That is
+deliberate: the mark belongs to the name, and a card with no heading has nothing
+for it to sit beside. Note the one place the two sides differ because of it —
+`ProjectPreview` has no such guard, since it substitutes an italic *Untitled
+project* heading, which is a departure its own file comment already documents.
+So admin shows the mark against the placeholder while the site withholds it
+until the name exists. Left as is rather than reconciled: the preview's job is to
+show the author that the logo uploaded, and the missing name is the thing they
+are meant to notice.
+
 The fields are read defensively, by type rather than by truthiness. This is not
 belt-and-braces. `useProjects` casts the response straight through
 `fetchJsonDataOrDefault` with no normaliser, unlike experiences, which go
@@ -80,17 +91,24 @@ introducing a normaliser for one field.
 **One detail was left to the browser rather than settled here, and has since
 been answered.** `LogoMark`'s box is a fixed 32px, tuned against the Experience
 section's larger serif heading, while the project name is `text-lg` on a card
-that measures 268px at a 1280px viewport. Checked against the running page with
-both marks in place, in both themes: 32px sits correctly beside the name, so the
-component is reused unchanged and gains no size prop. Trafikkskiltene's badge is
-the finer of the two and stays legible at that size.
+that measures 268px at a 1280px viewport.
+
+Checked in the browser against `npm run dev`, and note how, because the bucket
+holds no `logoUrl` yet and so the running page shows no marks: both marks were
+injected into the rendered cards as the exact DOM `LogoMark` emits — its span,
+its scale wrapper, and its two filter classes — then read in both themes. That
+is a real measurement of size and weight, not of the data path, and it leaves no
+trace in the branch. 32px sits correctly beside the name, so the component is
+reused unchanged and gains no size prop; Trafikkskiltene's badge is the finer of
+the two and stays legible at that size. The tile-free Veivett export was
+confirmed the same way, in both themes, before being called the fix.
 
 ### admin.askhb.no
 
 Close to a copy of what `OrganisationDialog` already does.
 
 - `ProjectDialog` gains an `ImageUploadField` — label `Logo (optional)`,
-  `dir={LOGO_DIR}`, `owner={fields.name}`, `ownerLabel="project name"` — and the
+  `dir={PROJECT_LOGO_DIR}`, `owner={draft.name}`, `ownerLabel="project name"` — and the
   same logo-scale number input beside it, bounds included.
 - `ProjectPreview` renders `LogoMark` the way `OrganisationPreview` does, so the
   dialog shows what the card will show.
@@ -105,8 +123,10 @@ collide. That premise is false, and the review caught it. `entryPrefix` in
 `func/keys.ts` is a pure function of `(dir, owner)`, and its suffix is an FNV-1a
 fingerprint of the owner's name — deterministic by design, because re-uploading
 an entry's asset is supposed to overwrite in place. The directory is therefore
-the only thing separating two namespaces, which is exactly what the comment on
-`LOGO_DIR` in `constants/app.ts` already says.
+the only thing separating two namespaces. The comment on `LOGO_DIR` in
+`constants/app.ts` implied that without stating it — it said only that a logo
+cannot collide with a screenshot of the same name — so the fix spells the
+stronger reading out where the constant is declared.
 
 Shared, a project and an organisation with the same name string compute one
 prefix, and the same file name lands on one key. A `logo.svg` uploaded on either
