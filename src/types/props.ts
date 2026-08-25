@@ -84,6 +84,19 @@ export interface ProjectItemProps {
     figure?: string;
     figureCaption?: string;
     skills?: string[];
+    /*
+     * Write-ups for the project, in the shape a role already uses -- same field
+     * name, same PortfolioLink, so resolveLinks serves both and the bucket
+     * describes a link the same way wherever one appears.
+     *
+     * It is also what lets pages.askhb.no put this project's mark on its write-up
+     * page: that build matches a note by the slug in a link pointing at it, and
+     * a project had no link to match on until this field existed. Matching on the
+     * project's name instead would be a guess, and the Ascend write-up is the
+     * case that shows why -- its note is named for the team while the entry is
+     * named for the organisation.
+     */
+    links?: PortfolioLink[];
 }
 
 // The flat shape the bucket still holds: one entry per role, the employer repeated
