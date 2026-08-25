@@ -1,8 +1,8 @@
 import '@fontsource-variable/newsreader';
 import '@fontsource-variable/inter';
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createRoot, hydrateRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider, HydrationBoundary, type DehydratedState } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -21,13 +21,45 @@ const queryClient = new QueryClient({
     },
 })
 
-createRoot(document.getElementById('root')!).render(
+/*
+ * The build embeds the prerendered query state as an inline JSON script; its
+ * presence, together with server-rendered children in the root element, is
+ * what selects hydration over a clean mount. The dev server has neither, so
+ * `npm run dev` takes the createRoot branch unchanged. A malformed payload
+ * falls back to a clean mount rather than a crash: the parse is guarded.
+ */
+const readDehydratedState = (): DehydratedState | null => {
+    const stateElement = document.getElementById('portfolio-state')
+
+    if (!stateElement?.textContent) {
+        return null
+    }
+
+    try {
+        return JSON.parse(stateElement.textContent) as DehydratedState
+    } catch {
+        return null
+    }
+}
+
+const rootElement = document.getElementById('root')!
+const dehydratedState = readDehydratedState()
+
+const app = (
     <StrictMode>
         <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
+            <HydrationBoundary state={dehydratedState ?? undefined}>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </HydrationBoundary>
             {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
-    </StrictMode>,
+    </StrictMode>
 )
+
+if (dehydratedState && rootElement.hasChildNodes()) {
+    hydrateRoot(rootElement, app)
+} else {
+    createRoot(rootElement).render(app)
+}
