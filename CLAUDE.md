@@ -5,11 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Vite dev server on http://localhost:5173
-npm run build    # tsc -b && vite build  → dist/
-npm run lint     # eslint .
-npm run preview  # serve the production build locally
+npm run dev       # Vite dev server on http://localhost:5173
+npm run build     # tsc -b, client build, SSR build, then prerender → dist/
+npm run prerender # the last two build stages alone (needs an existing dist/)
+npm run lint      # eslint .
+npm run preview   # serve the production build locally
 ```
+
+**`npm run build` needs the network.** The prerender stage fetches the live R2
+content and fails the build if any fetch fails after retries — deliberately, so
+a deploy can never ship the contentless shell. Offline, only `npm run dev` and
+`npm run lint` work.
 
 Node ≥22 — `.node-version` pins 22.16.0 because Vite 8 requires Node `^20.19.0 || >=22.12.0`, and Cloudflare Pages otherwise builds this project on its Node 18 default and fails. There is **no test framework configured** — no test script, no vitest/jest. Don't invent test commands; verify changes with `npm run build` and `npm run dev`.
 
@@ -19,7 +25,7 @@ Node ≥22 — `.node-version` pins 22.16.0 because Vite 8 requires Node `^20.19
 
 ### Content lives outside this repo
 
-The single most important thing to know: **editing this repo does not change the site's content.** Personal info, experience entries, education entries, and the profile picture are all fetched at runtime from a Cloudflare R2 bucket at `https://r2.askhb.no` (`src/constants/app.ts`):
+The single most important thing to know: **editing this repo does not change the site's content.** Personal info, experience entries, education entries, and the profile picture all come from a Cloudflare R2 bucket at `https://r2.askhb.no` (`src/constants/app.ts`) — fetched at runtime by the browser, and again at build time by the prerender step (see below):
 
 | Data | Endpoint |
 |---|---|
@@ -80,9 +86,19 @@ Pushing to `main` in the content repo fires `.github/workflows/notify-parent.yml
 
 ### Data flow
 
-`src/hooks/useData.ts` exposes three React Query hooks (`usePersonalInfo`, `useExperiences`, `useEducation`) plus `useAllPortfolioData()`, which fans out all three and collapses them into a single `isLoading` / `isError` pair. `src/pages/Portfolio.tsx` gates the whole page on that pair, so this is **all-or-nothing**: if any one of the three endpoints fails, the entire page renders `ErrorMessage` instead of partial content. Query defaults (5 min `staleTime`, 30 min `gcTime`, 3 retries, no refetch on focus) are set once on the `QueryClient` in `src/main.tsx`.
+The fetch and normalise logic lives in `src/func/portfolioData.ts` — one implementation shared by the runtime hooks and the build-time prerender, so the two can never disagree on fetching, normalisation or query identity. `src/hooks/useData.ts` wraps it in React Query hooks plus `useAllPortfolioData()`, which fans them out and collapses them into a single `isLoading` / `isError` pair. `src/pages/Portfolio.tsx` gates the whole page on that pair, so a first visit is **all-or-nothing**: if any endpoint fails with no cached data, the entire page renders `ErrorMessage` instead of partial content. On a hydrated visit the queries start with data, so a failed background refetch keeps the content instead. Query defaults (5 min `staleTime`, 30 min `gcTime`, 3 retries, no refetch on focus) are set once on the `QueryClient` in `src/main.tsx`.
 
 `fetchJsonData` casts the response with no runtime validation, so a shape mismatch between R2 and the TypeScript types surfaces as a render-time error, not a fetch error.
+
+### Prerendering
+
+The delivered `dist/index.html` is not an empty shell: after the client build, `npm run prerender` compiles `src/entry-prerender.tsx` with `vite build --ssr` and runs `scripts/prerender.mjs`, which renders the `/` route with live R2 data and rewrites the file with three things — the rendered markup inside `#root`, the dehydrated React Query state as an inline JSON script (`portfolio-state`), and a `Person` JSON-LD block. Crawlers, ATS parsers and link previews read the full portfolio without executing JavaScript; the FadeIn reveal is a CSS animation for exactly that reason.
+
+`src/main.tsx` hydrates when the state script and server-rendered children exist **and the path is `/`** — Cloudflare serves this same document for unknown paths, where the markup cannot match the 404 route, so every other path takes the clean `createRoot` mount that clears the server HTML. The dev server has no state script and is unchanged.
+
+Two rules keep this safe. Every component reachable from `/` must produce the same first render on server and client: no browser APIs, dates or randomness during render or in a `useState` initializer (this is why `DarkModeToggle` is stateless-at-first-render and both its icons are in the markup with the class-based variant choosing). And in `scripts/prerender.mjs`, remote content must never steer the rewrite: inline JSON gets `<` escaped, and every insertion goes through a function replacer so `$` sequences in content are inert — keep both properties when touching that file.
+
+Freshness: visitors revalidate against live R2 after hydration (the 5-minute `staleTime`), so they always see current content; the *static* HTML only updates when a build runs. r2-worker fires a Cloudflare Pages deploy hook after each content save to close that gap.
 
 ### The desktop layout is a rail, and the pinning is structural
 

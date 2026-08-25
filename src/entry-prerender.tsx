@@ -53,7 +53,9 @@ export const render = async (): Promise<PrerenderResult> => {
         name: personalInfo.name,
         jobTitle: personalInfo.title,
         url: 'https://www.askhb.no/',
-        image: personalInfo.profilePictureUrl ?? R2_PROFILE_PICTURE,
+        // `||`, not `??`: an empty-string field must also fall back, matching
+        // how the page itself resolves the photo.
+        image: personalInfo.profilePictureUrl || R2_PROFILE_PICTURE,
         affiliation: {
             '@type': 'CollegeOrUniversity',
             name: 'Norwegian University of Science and Technology',
