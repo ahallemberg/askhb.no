@@ -1,4 +1,5 @@
 import { type ProjectItemProps } from '../types/props';
+import { resolveLinks } from '../func/organisations';
 import LogoMark from './LogoMark';
 import RichText from './RichText';
 
@@ -99,6 +100,13 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * has nothing to match it against.
      */
     const name = typeof project.name === 'string' ? project.name.trim() : '';
+
+    /*
+     * Same normaliser the roles use, so a link saved without a label still reads
+     * as something in a link list and one saved without a url is dropped rather
+     * than rendered as an anchor to nowhere.
+     */
+    const links = resolveLinks(project.links);
 
     /*
      * Read by type rather than by truthiness, and that is load-bearing here in a
@@ -290,6 +298,32 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
                             </li>
                         ))}
                     </ul>
+                )}
+
+                {/*
+                 * Lifted over the stretched overlay like the description's own
+                 * anchors, for the same reason: the card opens the project's site,
+                 * and these open something else, so they have to be clickable in
+                 * their own right.
+                 */}
+                {links.length > 0 && (
+                    <div className="relative z-10 mt-3 flex flex-wrap gap-x-5 gap-y-1">
+                        {links.map((link, index) => (
+                            <a
+                                key={index}
+                                href={link.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                /* Underlined rather than accent alone, the same
+                                   contrast reasoning RoleBlock spells out: accent
+                                   against the copy beside it is nowhere near the
+                                   3:1 a colour-only link cue needs. */
+                                className="text-[13px] text-accent underline decoration-1 underline-offset-4 transition-colors hover:text-ink focus-visible:outline-accent rounded-[2px] focus-visible:outline-2 focus-visible:outline-offset-2"
+                            >
+                                {link.label} <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        ))}
+                    </div>
                 )}
 
                 {/*
