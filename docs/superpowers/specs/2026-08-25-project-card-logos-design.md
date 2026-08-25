@@ -77,13 +77,13 @@ coerced the same way for consistency. `ProjectItem` already defends `name`,
 `skills` and `url` field by field; this follows that pattern rather than
 introducing a normaliser for one field.
 
-**One detail left to the browser rather than settled here.** `LogoMark`'s box is
-a fixed 32px, tuned against the Experience section's larger serif heading. The
-project name is `text-lg` on a 256px card. Reuse the component unchanged first
-and look at it; only if it reads heavy should `LogoMark` gain an optional size
-with the current value as its default, so the Experience section is untouched
-either way. Adding the prop speculatively would be new API surface bought
-against a guess.
+**One detail was left to the browser rather than settled here, and has since
+been answered.** `LogoMark`'s box is a fixed 32px, tuned against the Experience
+section's larger serif heading, while the project name is `text-lg` on a card
+that measures 268px at a 1280px viewport. Checked against the running page with
+both marks in place, in both themes: 32px sits correctly beside the name, so the
+component is reused unchanged and gains no size prop. Trafikkskiltene's badge is
+the finer of the two and stays legible at that size.
 
 ### admin.askhb.no
 
