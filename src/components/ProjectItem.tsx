@@ -249,10 +249,15 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
                      * has no url, so a project without a logo is flush left and
                      * unchanged; only the row wrapper is new.
                      *
-                     * min-w-0 for the same reason the text cell above carries it:
-                     * the mark holds its width, so without this a long unbroken
-                     * name would push the row past the cell instead of wrapping
-                     * inside it.
+                     * min-w-0 for the same reason the text cell above carries it,
+                     * though not for quite the reason it first looks like: a flex
+                     * item's automatic minimum is its min-content width, so a name
+                     * with a space in it already wraps without help. The case this
+                     * changes is the single unbroken token wider than the cell.
+                     * Without it that token sets the heading's minimum and widens
+                     * the row, and since the mark will not shrink the row grows
+                     * past the cell; with it the overflow stays the heading's own
+                     * and the mark keeps its place.
                      */
                     <div className="flex items-center gap-3">
                         <LogoMark url={logoUrl} scale={logoScale} />
