@@ -43,7 +43,15 @@ const readDehydratedState = (): DehydratedState | null => {
 }
 
 const rootElement = document.getElementById('root')!
-const dehydratedState = readDehydratedState()
+
+/*
+ * Only `/` is prerendered, but Cloudflare serves this same document for every
+ * unknown path, so on any other URL the server markup (the portfolio) cannot
+ * match what the router renders (the 404 page). Hydrating there guarantees a
+ * root mismatch; mounting clean instead clears the server HTML, which is
+ * exactly the pre-prerender behaviour for those paths.
+ */
+const dehydratedState = window.location.pathname === '/' ? readDehydratedState() : null
 
 const app = (
     <StrictMode>

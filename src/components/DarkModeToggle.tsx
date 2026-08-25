@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 /*
  * Stateless on purpose. The bootstrap script in index.html has already put the
@@ -10,8 +10,22 @@ import React from 'react';
  * browser, which is a hydration mismatch on a prerendered page.
  */
 const DarkModeToggle: React.FC = () => {
+    /*
+     * null until mounted. The icon swap is CSS-driven and needs no state, but
+     * assistive tech cannot see CSS visibility, so aria-pressed is its only
+     * signal of the current mode. The server cannot know the theme, so the
+     * first render carries no aria-pressed on either side (hydration-safe);
+     * the effect fills it in once the class on <html> is readable.
+     */
+    const [isDark, setIsDark] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        setIsDark(document.documentElement.classList.contains('dark'));
+    }, []);
+
     const toggleDarkMode = () => {
         const nowDark = document.documentElement.classList.toggle('dark');
+        setIsDark(nowDark);
 
         try {
             localStorage.setItem('theme', nowDark ? 'dark' : 'light');
@@ -34,6 +48,7 @@ const DarkModeToggle: React.FC = () => {
              */
             className="text-ink-faint hover:text-ink hover:bg-rule-faint focus-visible:outline-accent rounded-[2px] p-2 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
             aria-label="Toggle dark mode"
+            aria-pressed={isDark ?? undefined}
         >
             {/* Sun: visible only when the page is dark. */}
             <svg

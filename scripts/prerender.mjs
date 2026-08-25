@@ -15,27 +15,47 @@ const SSR_BUNDLE = new URL('../dist-ssr/entry-prerender.js', import.meta.url)
 // terminate the element early.
 const inlineJson = (value) => JSON.stringify(value).replaceAll('<', '\\u003c')
 
+/*
+ * All replacements insert content derived from remote R2 data, and
+ * String.replace treats `$` sequences in a string replacement as substitution
+ * directives -- `$&` would re-inject the matched anchor, `$$` collapses to
+ * `$`. A function replacer is inserted literally, so content can never steer
+ * the rewrite. The anchor must exist: a silent no-op here would ship a page
+ * missing a piece this build exists to add.
+ */
+const replaceOnce = (haystack, anchor, buildReplacement) => {
+    if (!haystack.includes(anchor)) {
+        throw new Error(`dist/index.html has no ${JSON.stringify(anchor)} anchor -- did the client build output change?`)
+    }
+
+    return haystack.replace(anchor, () => buildReplacement)
+}
+
 const { render } = await import(SSR_BUNDLE.href)
 const { html, dehydratedState, jsonLd } = await render()
 
-if (!html.includes(String(jsonLd.name))) {
-    throw new Error('Prerendered markup does not contain the owner name -- it likely rendered the loading screen instead of content')
+/*
+ * A populated cache renders content; an empty or mismatched one renders the
+ * loading screen. Four successful queries plus a plausible markup size prove
+ * the former without string-matching against React-escaped names.
+ */
+if (!Array.isArray(dehydratedState.queries) || dehydratedState.queries.length !== 4) {
+    throw new Error(`Expected 4 dehydrated queries, got ${dehydratedState.queries?.length ?? 'none'}`)
+}
+
+if (html.length < 5000) {
+    throw new Error(`Prerendered markup is implausibly small (${html.length} bytes) -- it likely rendered the loading screen instead of content`)
 }
 
 let indexHtml = await readFile(INDEX_PATH, 'utf8')
 
-const rootMarker = '<div id="root"></div>'
-if (!indexHtml.includes(rootMarker)) {
-    throw new Error('dist/index.html has no empty root element to fill -- did the client build output change?')
-}
-
-indexHtml = indexHtml.replace(rootMarker, `<div id="root">${html}</div>`)
+indexHtml = replaceOnce(indexHtml, '<div id="root"></div>', `<div id="root">${html}</div>`)
 
 const jsonLdScript = `<script type="application/ld+json">${inlineJson(jsonLd)}</script>`
-indexHtml = indexHtml.replace('</head>', `${jsonLdScript}\n  </head>`)
+indexHtml = replaceOnce(indexHtml, '</head>', `${jsonLdScript}\n  </head>`)
 
 const stateScript = `<script id="portfolio-state" type="application/json">${inlineJson(dehydratedState)}</script>`
-indexHtml = indexHtml.replace('</body>', `${stateScript}\n  </body>`)
+indexHtml = replaceOnce(indexHtml, '</body>', `${stateScript}\n  </body>`)
 
 await writeFile(INDEX_PATH, indexHtml)
 await rm(SSR_OUT_DIR, { recursive: true, force: true })
