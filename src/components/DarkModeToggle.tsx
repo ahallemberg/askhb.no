@@ -1,50 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 /*
- * These two mirror the bootstrap script in index.html, which has already put the
- * class on <html> before first paint. Both sides read the same two inputs in the
- * same order and have to stay in step: if they ever disagree, this component
- * undoes the bootstrap's work on mount and the flash comes back.
- *
- * The bootstrap cannot import these -- it has to run ahead of the module graph.
- *
- * Guarded because localStorage throws outright in some privacy modes, and an
- * uncaught throw in a state initialiser takes down the whole React tree, which
- * is the same failure the bootstrap is wrapped against.
+ * Stateless on purpose. The bootstrap script in index.html has already put the
+ * theme class on <html> before first paint, and that class stays the single
+ * source of truth: both icons are always in the markup and the same
+ * class-based variant the rest of the page uses decides which one shows.
+ * Holding the theme in React state instead gives this component a different
+ * first render on the server (no storage, no media queries) than in the
+ * browser, which is a hydration mismatch on a prerendered page.
  */
-const readStoredTheme = (): string | null => {
-    try {
-        return localStorage.getItem('theme');
-    } catch {
-        return null;
-    }
-};
-
-const prefersDarkScheme = (): boolean => {
-    try {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } catch {
-        return false;
-    }
-};
-
 const DarkModeToggle: React.FC = () => {
-    const [darkMode, setDarkMode] = useState<boolean>(() => {
-        const savedTheme = readStoredTheme();
-
-        return savedTheme === 'dark' || (!savedTheme && prefersDarkScheme());
-    });
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', darkMode);
-    }, [darkMode]);
-
     const toggleDarkMode = () => {
-        const newDarkMode = !darkMode;
-        setDarkMode(newDarkMode);
+        const nowDark = document.documentElement.classList.toggle('dark');
 
         try {
-            localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+            localStorage.setItem('theme', nowDark ? 'dark' : 'light');
         } catch {
             // Storage unavailable: the choice still applies to this page view,
             // it just cannot outlive it.
@@ -63,39 +33,36 @@ const DarkModeToggle: React.FC = () => {
              * which clear the 3:1 WCAG 1.4.11 asks of an icon either way.
              */
             className="text-ink-faint hover:text-ink hover:bg-rule-faint focus-visible:outline-accent rounded-[2px] p-2 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
-            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle dark mode"
         >
-            {darkMode ? (
-                // Sun Icon
-                <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                </svg>
-            ) : (
-                // Moon Icon 
-                <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                    />
-                </svg>
-            )}
+            {/* Sun: visible only when the page is dark. */}
+            <svg
+                className="hidden h-6 w-6 dark:block"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+            </svg>
+            {/* Moon: visible only when the page is light. */}
+            <svg
+                className="h-6 w-6 dark:hidden"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                />
+            </svg>
         </button>
     );
 };
