@@ -96,10 +96,25 @@ Close to a copy of what `OrganisationDialog` already does.
   dialog shows what the card will show.
 - The project type in `src/types/props.ts` gains the same two fields.
 
-Projects share `LOGO_DIR` with organisations rather than taking a directory of
-their own. The uploader already keys each mark under a slug plus a random
-suffix, so two owners cannot collide even if they were named the same, and a
-second constant would only add a place for the two to drift apart.
+Project marks take their own `PROJECT_LOGO_DIR` rather than sharing the
+organisations' `LOGO_DIR`.
+
+This spec originally said the opposite, on the premise that the uploader keys
+each mark under a slug plus a random suffix and so two owners could never
+collide. That premise is false, and the review caught it. `entryPrefix` in
+`func/keys.ts` is a pure function of `(dir, owner)`, and its suffix is an FNV-1a
+fingerprint of the owner's name — deterministic by design, because re-uploading
+an entry's asset is supposed to overwrite in place. The directory is therefore
+the only thing separating two namespaces, which is exactly what the comment on
+`LOGO_DIR` in `constants/app.ts` already says.
+
+Shared, a project and an organisation with the same name string compute one
+prefix, and the same file name lands on one key. A `logo.svg` uploaded on either
+side would take the other's object, silently: `overwritesCurrent` compares only
+against the field's own current value, uploads publish on pick rather than on
+save, and the bucket has no versioning and the worker no DELETE. Naming a
+project after the employer it was built for is an ordinary thing to do, so this
+was a live trap rather than a theoretical one.
 
 ### The two marks themselves
 
