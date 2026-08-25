@@ -1,4 +1,5 @@
 import { type ProjectItemProps } from '../types/props';
+import LogoMark from './LogoMark';
 import RichText from './RichText';
 
 interface ProjectItemComponentProps {
@@ -98,6 +99,23 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
      * has nothing to match it against.
      */
     const name = typeof project.name === 'string' ? project.name.trim() : '';
+
+    /*
+     * Read by type rather than by truthiness, and that is load-bearing here in a
+     * way it is not for an organisation: experiences pass through
+     * normaliseExperiences field by field, while useProjects casts the bucket's
+     * array straight through with no normaliser at all. So these two arrive
+     * exactly as the file spelled them.
+     *
+     * LogoMark calls .split on the url the moment it is truthy, so a logoUrl
+     * saved as a number reaches it, throws, and takes the whole page with it --
+     * Portfolio gates every section on one isError and there is no
+     * ErrorBoundary. The scale is milder, since a wrong type lands in a
+     * transform and renders as a dead declaration, but it is read the same way
+     * rather than leaving one of a pair guarded and the other not.
+     */
+    const logoUrl = typeof project.logoUrl === 'string' ? project.logoUrl : undefined;
+    const logoScale = typeof project.logoScale === 'number' ? project.logoScale : undefined;
 
     /*
      * Which shot each theme gets. Either field may be absent, and one on its own
@@ -220,11 +238,35 @@ const ProjectItem: React.FC<ProjectItemComponentProps> = ({ project }) => {
              */}
             <div className="flex min-w-0 flex-1 flex-col p-5">
                 {name && (
-                    <h3 className="font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
-                        {stretched === 'name' && url
-                            ? <a href={url} target="_blank" rel="noreferrer" className={STRETCH_CLASS}>{name}</a>
-                            : name}
-                    </h3>
+                    /*
+                     * The mark sits beside the heading rather than inside it, the
+                     * same grouping OrganisationItem uses. Inside would put an
+                     * image within the anchor that carries the card's stretched
+                     * link, whose accessible name the heading already supplies --
+                     * and the mark is decorative, so it has nothing to add to it.
+                     *
+                     * LogoMark renders nothing rather than a reserved box when it
+                     * has no url, so a project without a logo is flush left and
+                     * unchanged; only the row wrapper is new.
+                     *
+                     * min-w-0 for the same reason the text cell above carries it,
+                     * though not for quite the reason it first looks like: a flex
+                     * item's automatic minimum is its min-content width, so a name
+                     * with a space in it already wraps without help. The case this
+                     * changes is the single unbroken token wider than the cell.
+                     * Without it that token sets the heading's minimum and widens
+                     * the row, and since the mark will not shrink the row grows
+                     * past the cell; with it the overflow stays the heading's own
+                     * and the mark keeps its place.
+                     */
+                    <div className="flex items-center gap-3">
+                        <LogoMark url={logoUrl} scale={logoScale} />
+                        <h3 className="min-w-0 font-serif text-lg font-semibold text-ink transition-colors group-hover:text-accent">
+                            {stretched === 'name' && url
+                                ? <a href={url} target="_blank" rel="noreferrer" className={STRETCH_CLASS}>{name}</a>
+                                : name}
+                        </h3>
+                    </div>
                 )}
 
                 {/* The links inside are lifted over the stretched overlay so they

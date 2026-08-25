@@ -50,6 +50,22 @@ export interface ProjectItemProps {
     name: string;
     description: string;
     url?: string;
+    /*
+     * Spelled exactly as OrganisationProps spells it, and that is the point
+     * rather than a coincidence: LogoMark takes `url` and `scale`, so matching
+     * the field names is what lets one component serve both sections instead of
+     * being parameterised per caller, and it keeps the bucket describing a mark
+     * the same way wherever a mark appears.
+     *
+     * The site's own screenshot already contains this logo -- the card anchors
+     * its crop to the top left so it survives -- but at roughly a fifth of
+     * native scale, which puts it near 6px. This field is what makes it legible,
+     * not what makes it present.
+     */
+    logoUrl?: string;
+    // Optical size correction, as on an organisation. Marks differ in ink
+    // coverage, so identical boxes do not give identical visual weight.
+    logoScale?: number;
     screenshotUrl?: string;
     /*
      * The same shot with the site in dark mode. Optional, and absent is the
